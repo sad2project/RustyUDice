@@ -7,16 +7,21 @@ use crate::{
     dice::{Die, Face},
     random::Rng,
     rollers::{Roll, Roller} };
-
+use crate::rollers::{ComposableRoll, ComposableRoller};
 
 impl Roller for Die {
-    fn is_simple(&self) -> bool { true }
-
     fn description(&self) -> String {
         self.name.clone() }
 
     fn roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn Roll> {
-        DieRoll::new(self.clone(), Die::roll_face_with(self.deref(), rng) ) }
+        DieRoll::new(self.clone(), self.roll_face_with(rng) ) }
+}
+impl ComposableRoller for Die {
+    fn is_simple(&self) -> bool { true }
+
+    fn composable_roll(self: Rc<Self>, rng: Rng) -> Box<dyn ComposableRoll> {
+        DieRoll::new(self.clone(), self.roll_face_with(rng))
+    }
 }
 
 
@@ -30,14 +35,18 @@ impl DieRoll {
         Box::new(Self{ die, face }) }
 }
 impl Roll for DieRoll {
+    fn intermediate_results(&self) -> String { self.to_string() }
+
+    fn final_result(&self) -> String {
+        self.totals().to_string() }
+}
+impl ComposableRoll for DieRoll {
     fn is_simple(&self) -> bool { true }
 
     fn rolled_faces(&self) -> Vec<&DieRoll> {
         vec![self] }
 
     fn totals(&self) -> Values { self.face.deref().values.clone() }
-
-    fn intermediate_results(&self) -> String { self.to_string() }
 }
 impl Display for DieRoll {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
@@ -54,6 +63,8 @@ mod tests {
         random::Rng,
         relationships::DNumRelationship,
         rollers::{Roller, Roll} };
+    use crate::random::default_rng;
+    use crate::rollers::ComposableRoller;
 
     fn d2_test_die() -> Rc<Die> {
         let rel = DNumRelationship::new();
@@ -68,15 +79,15 @@ mod tests {
     #[test]
     fn d2_roll_totals() {
         let die: Rc<Die> = d2_test_die();
-        let die_roller: Rc<dyn Roller> = die.clone();
+        let die_roller: Rc<dyn ComposableRoller> = die.clone();
         let one: &Values = &die.faces.get(0).unwrap().values;
         let two: &Values = &die.faces.get(1).unwrap().values;
 
         assert_eq!(die_roller.clone()
-                       .roll_with(always_1_rng()).totals(),
+                       .composable_roll(always_1_rng()).totals(),
                    one.clone());
         assert_eq!(die_roller
-                       .roll_with(always_2_rng()).totals(),
+                       .composable_roll(always_2_rng()).totals(),
                    two.clone()); }
 
     #[test]
@@ -98,11 +109,11 @@ mod tests {
     #[test]
     fn d2_roll_is_simple() {
         let die = d2_test_die();
-        assert!(die.roll().is_simple()) }
+        assert!(die.composable_roll(default_rng()).is_simple()) }
 
     #[test]
     fn d2_roll_rolled_faces() {
-        let die_roll = d2_test_die().roll_with(always_1_rng());
+        let die_roll = d2_test_die().composable_roll(always_1_rng());
         let sut = die_roll.rolled_faces();
         assert_eq!(sut.len(), 1);
         assert_eq!(sut[0].intermediate_results(), "d2:[1]"); }
