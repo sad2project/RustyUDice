@@ -1,0 +1,4 @@
+// TODO: Add an optional timeout feature to StatisticsRoller
+// TODO: Add a timer output to StatisticsRoll and also tie in the timeout
+// TODO: add + and - operators to ComposableRoller
+// TODO: add + and - operators to Values
