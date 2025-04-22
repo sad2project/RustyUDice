@@ -22,7 +22,7 @@
 /// collect those and bring it all together into useful information. From the `Roll`, you
 /// can describe the entirety of the roll ("this die rolled a 7, and this one rolled a 2,
 /// and 4 was added on after"; that kind of stuff, though more strictly defined than that),
-/// as well as calculting the end total(s).
+/// as well as calculating the end total(s).
 mod add;
 mod die;
 mod multi;
@@ -55,7 +55,7 @@ use crate::{
 /// objects. 
 ///
 /// Generally, `Roller`s are composable, building on top of one another, but if a type 
-/// implements `Roller` but not `ComposableRoller`, it cannot be composed inside of another
+/// implements `Roller` but not `ComposableRoller`, it cannot be composed inside another
 /// Roller. These `Roller`s are `MultiRoller` and `StatisticsRoller`, which produce multiple
 /// results that aren't able to be made into a single one to be modified. If you do want to
 /// modify the results, you need to put that modification on all the inner `Roller`s
@@ -136,7 +136,7 @@ pub trait ComposableRoller: Roller {
     /// yourself.
     fn inner_description(&self) -> String {
         if self.is_simple() { self.description() }
-        else { format!("({})", self.description() } }
+        else { format!("({})", self.description() ) } }
         
     /// The same as `roll_with()`, but returns a `ComposableRoll` to avoid needing to
     /// upcast or downcast. When a wrapper `Roller` calls a roll method of an inner 
