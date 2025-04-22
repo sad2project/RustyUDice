@@ -40,7 +40,7 @@ impl Strategy {
     /// we need to support both options, we'll need a field in Relationship to hold the default 
     /// value, either as an i32 (most flexible) or enum with the options of Zero and Min (more 
     /// compact, maybe).
-    fn order_comparator(&self, roll1: &Box<dyn Roll>, roll2: &Box<dyn Roll>) -> Ordering {
+    fn order_comparator(&self, roll1: &Box<dyn ComposableRoll>, roll2: &Box<dyn ComposableRoll>) -> Ordering {
         match self {
             KeepAll => { Ordering::Equal }
             DropLowest {count: _, order_by: order}
@@ -92,7 +92,7 @@ impl Strategy {
 /// lowest result. 
 pub struct PoolRoller {
     count: u8,
-    die: Rc<dyn Roller>,
+    die: Rc<dyn ComposableRoller>,
     strategy: Strategy,
 }
 impl PoolRoller {
@@ -102,30 +102,56 @@ impl PoolRoller {
     /// effective with the given "die", including an empty one. In cases where it has
     /// no effect, DropLowest will simply drop the earliest roll(s) and DropHighest will
     /// simply drop the latest roll(s)
-    pub fn new(count: u8, die: Rc<dyn Roller>, strategy: Strategy) -> Option<Rc<Self>> {
+    pub fn new(count: u8, die: Rc<dyn ComposableRoller>, strategy: Strategy) -> Option<Rc<Self>> {
         if strategy.count() >= count { None }
         else { Some(Rc::new(Self { count, die, strategy })) } }
 
     pub fn basic(count: u8, die: Rc<dyn Roller>) -> Rc<Self> {
         Rc::new (Self { count, die, strategy: Strategy::KeepAll }) }
 
-    pub fn better_of(die: Rc<dyn Roller>, order_by: Vec<Rc<dyn Relationship>>) -> Rc<Self> {
+    pub fn better_of(die: Rc<dyn ComposableRoller>, order_by: Vec<Rc<dyn Relationship>>) -> Rc<Self> {
         Rc::new(Self {
             count: 2,
             die,
             strategy: Strategy::DropLowest{count: 1, order_by} }) }
 }
 impl Roller for PoolRoller {
-    fn is_simple(&self) -> bool { self.die.is_simple() && self.strategy.is_simple() }
-
     fn description(&self) -> String {
         let inner = crate::str_util::wrapped_text(&*self.die.description(), self.die.is_simple());
         format!("{}{} {}", self.count, inner, self.strategy.descriptor()) }
 
     fn roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn Roll> {
-        let mut rolls: Vec<Box<dyn Roll>> = Vec::with_capacity(self.count as usize);
+        let mut rolls: Vec<Box<dyn ComposableRoll>> = Vec::with_capacity(self.count as usize);
         for _ in 0..self.count {
-            rolls.push(self.die.clone().roll_with(rng));
+            rolls.push(self.die.clone().composable_roll(rng));
+        }
+        match self.strategy {
+            KeepAll => {
+                PoolRoll::new(
+                    rolls,
+                    Vec::with_capacity(0) ) }
+            DropLowest { count, order_by: _ } => {
+                let cut_idx = count as usize;
+                rolls.sort_by(|a, b| self.strategy.order_comparator(a, b));
+                let kept = rolls.split_off(cut_idx);
+                PoolRoll::new(
+                    kept,
+                    rolls ) }
+            DropHighest { count, order_by: _ } => {
+                let cut_idx = rolls.len() - (count as usize);
+                rolls.sort_by(|a, b| self.strategy.order_comparator(a, b));
+                let dropped = rolls.split_off(cut_idx);
+                PoolRoll::new(
+                    rolls,
+                    dropped ) } } }
+}
+impl ComposableRoller for PoolRoller {
+    fn is_simple(&self) -> bool { self.die.is_simple() && self.strategy.is_simple() }
+    
+    fn composable_roll(self: Rc<Self>, rng: Rng) -> Box<dyn ComposableRoll> {
+        let mut rolls: Vec<Box<dyn ComposableRoll>> = Vec::with_capacity(self.count as usize);
+        for _ in 0..self.count {
+            rolls.push(self.die.clone().composable_roll(rng));
         }
         match self.strategy {
             KeepAll => {
@@ -150,11 +176,11 @@ impl Roller for PoolRoller {
 
 
 struct PoolRoll {
-    kept_rolls: Vec<Box<dyn Roll>>,
-    dropped_rolls: Vec<Box< dyn Roll>>,
+    kept_rolls: Vec<Box<dyn ComposableRoll>>,
+    dropped_rolls: Vec<Box< dyn ComposableRoll>>,
 }
 impl PoolRoll {
-    fn new(kept_rolls: Vec<Box<dyn Roll>>, dropped_rolls: Vec<Box<dyn Roll>>) -> Box<Self> {
+    fn new(kept_rolls: Vec<Box<dyn ComposableRoll>>, dropped_rolls: Vec<Box<dyn ComposableRoll>>) -> Box<Self> {
         Box::new(Self {kept_rolls, dropped_rolls}) }
 
     fn build_intermediate_results_part(rolls: &Vec<Box<dyn Roll>>, separator: &str) -> String {
@@ -164,6 +190,18 @@ impl PoolRoll {
             .join(separator) }
 }
 impl Roll for PoolRoll {
+    fn intermediate_results(&self) -> String {
+        if self.is_simple() {
+            Self::build_intermediate_results_part(&self.kept_rolls, " + ") }
+        else {
+            format!(
+                "{}, [dropped: {}]",
+                Self::build_intermediate_results_part(&self.kept_rolls, " + "),
+                Self::build_intermediate_results_part(&self.dropped_rolls, ", ") ) } }
+    
+    fn final_result(&self) -> String { self.totals().to_string() }
+}
+impl ComposableRoll for PoolRoll {
     fn is_simple(&self) -> bool { self.dropped_rolls.len() == 0 }
 
     /// Returns the rolled faces of just the kept rolls
@@ -179,14 +217,4 @@ impl Roll for PoolRoll {
         for roll in self.kept_rolls.iter() {
             out.add_all_values(roll.totals()); }
         out }
-
-    fn intermediate_results(&self) -> String {
-        if self.is_simple() {
-            Self::build_intermediate_results_part(&self.kept_rolls, " + ") }
-        else {
-            format!(
-                "{}, [dropped: {}]",
-                Self::build_intermediate_results_part(&self.kept_rolls, " + "),
-                Self::build_intermediate_results_part(&self.dropped_rolls, ", ") ) } }
 }
-
