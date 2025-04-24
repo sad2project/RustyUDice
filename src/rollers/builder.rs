@@ -3,7 +3,7 @@ use std::{
     rc::Rc };
 use crate::{
     {Relationship, Value},
-    rollers::{ComposableRoller, ModifierRoller, PoolRoller} };
+    rollers::{ComposableRoller, ModifierRoller, PoolRoller, AddRoller, SubtractRoller} };
 
 struct Builder(Rc<dyn ComposableRoller>);
 impl Builder {

@@ -1,3 +1,10 @@
+use std::rc::Rc;
+use crate::{
+    random::Rng,
+    rollers::{Roll, Roller} };
+
+
+#[derive(Clone)]
 pub struct NamedRoller {
   name: Option<String>,
   roller: Rc<dyn Roller>
@@ -10,8 +17,10 @@ impl NamedRoller {
         Self { name: None, roller } }
     
     fn name(&self, index: usize) -> String {
-        if self.name.is_none() { index.to_string() }
-        else { self.name.clone() } } 
+        if self.name.is_none() { 
+            index.to_string() }
+        else { 
+            self.name.clone().unwrap() } } 
     
     fn description(&self, index: usize) -> String {
         format!("{}: {}", self.name(index), self.roller.description()) }
@@ -20,21 +29,7 @@ impl NamedRoller {
         NamedRoll { name: self.name(index), roll: self.roller.clone().roll_with(rng) } }
 }
 
-pub struct NamedRoll {
-    name: String,
-    roll: Rc<dyn Roll>
-}
-impl NamedRoll {
-    fn intermediate_results(&self) -> String {
-        format!("{}: {}", self.name, self.roll.intermediate_results()) }
-    
-    fn final_result(&self) -> String {
-        format!("{}: {}", self.name, self.roll.final_result()) }
-}
 
-
-// This can't be a proper `Roller`. It doesn't come up with a single result total. 
-// It's used for rolling multiple things at once but not adding them up. 
 pub struct MultiRoller {
     inner: Vec<NamedRoller>
 }
@@ -46,7 +41,7 @@ impl MultiRoller {
         self }
     
     pub fn add_numbered(&mut self, roller: Rc<dyn Roller>) -> &Self {
-        self.inner.push(NamedRoller:numbered(roller);
+        self.inner.push(NamedRoller::numbered(roller));
         self }
 }
 impl Roller for MultiRoller {
@@ -61,6 +56,19 @@ impl Roller for MultiRoller {
           .map(|idx, roller| roller.roll_with(idx, rng))
           .collect::<MultiRoll>()
           .rc() }
+}
+
+
+pub struct NamedRoll {
+    name: String,
+    roll: Box<dyn Roll>
+}
+impl NamedRoll {
+    fn intermediate_results(&self) -> String {
+        format!("{}: {}", self.name, self.roll.intermediate_results()) }
+
+    fn final_result(&self) -> String {
+        format!("{}: {}", self.name, self.roll.final_result()) }
 }
 
 
