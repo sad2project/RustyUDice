@@ -18,6 +18,8 @@ impl Roller for Die {
 }
 impl ComposableRoller for Die {
     fn is_simple(&self) -> bool { true }
+    
+    fn is_die(&self) -> bool { true }
 
     fn composable_roll(self: Rc<Self>, rng: Rng) -> Box<dyn ComposableRoll> {
         DieRoll::new(self.clone(), self.roll_face_with(rng))
@@ -42,6 +44,8 @@ impl Roll for DieRoll {
 }
 impl ComposableRoll for DieRoll {
     fn is_simple(&self) -> bool { true }
+    
+    fn is_die(&self) -> bool { true }
 
     fn rolled_faces(&self) -> Vec<&DieRoll> {
         vec![self] }

@@ -1,17 +1,21 @@
 use crate::rollers::Roller;
 
 pub struct AddRoller {
-    lhs: Rc<dyn Roller>,
-    rhs: Rc<dyn Roller>
+    lhs: Rc<dyn ComposableRoller>,
+    rhs: Rc<dyn ComposableRoller>
 }
 impl AddRoller {
-    pub fn new(lhs: Rc<dyn Roller>, rhs: Rc<dyn Roller>) -> Rc<Self> {
+    pub fn new(lhs: Rc<dyn ComposableRoller>, rhs: Rc<dyn ComposableRoller>) -> Rc<Self> {
         Rc::new(Self{ lhs, rhs })
     }
 }
 impl Roller for AddRoller {
-    todo!()
+    fn description(&self) -> String {
+        ; }
+    
+    fn roll_with(self: Rc<Self>, rng: Rng) -> Rc<dyn Roll> {
+        ; }
 }
 impl ComposableRoll for AddRoller {
-    todo!()
+    fn is_simple(&self) -> bool
 }

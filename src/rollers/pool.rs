@@ -117,6 +117,10 @@ impl PoolRoller {
 }
 impl Roller for PoolRoller {
     fn description(&self) -> String {
+        let mut output = if self.die.is_die() { format!
+        match self.strategy {
+          KeepAll => if self.die.is_die() { format!("{}{}"
+        }
         let inner = crate::str_util::wrapped_text(&*self.die.description(), self.die.is_simple());
         format!("{}{} {}", self.count, inner, self.strategy.descriptor()) }
 

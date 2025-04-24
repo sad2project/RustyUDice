@@ -131,6 +131,10 @@ pub trait ComposableRoller: Roller {
     /// description should be wrapped in parentheses. Used by `inner_description()`.
     fn is_simple(&self) -> bool;
     
+    /// This is just for the `Die``Roller` implementation to say `true` to, so just leave
+    /// it as false
+    fn is_die(&self) -> { false }
+    
     /// Uses `is_simple()` to determine whether to wrap `description()` in parentheses.
     /// Unless you possibly want to wrap it in something else, do not implement this 
     /// yourself.
