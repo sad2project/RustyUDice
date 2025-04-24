@@ -30,6 +30,7 @@ mod modifier;
 mod pool;
 mod stats;
 mod subtract;
+mod builder;
 
 pub use self::{
     add::*,
@@ -38,7 +39,8 @@ pub use self::{
     modifier::*,
     pool::*,
     stats::*,
-    subtract::* };
+    subtract::*,
+    builder::* };
 
 use std::{
     rc::Rc,
