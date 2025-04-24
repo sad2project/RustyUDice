@@ -36,8 +36,6 @@ impl StatsRoller {
         Rc::new(Self { runs: num_runs, roller }) }
 }
 impl Roller for StatsRoller {
-    fn is_simple(&self) -> bool { true }
-    
     fn description(&self) -> String {
         format!("Runs '{}' {} times", self.roller.description(), self.runs) }
     
@@ -77,14 +75,6 @@ impl StatisticsRoll {
     pub fn std_deviations(&self) -> Stat { self.collected_stats.std_deviations() }
 }
 impl Roll for StatisticsRoll {
-    fn is_simple(&self) -> bool { false }
-    
-    /// Returns the rolled faces from the first roll
-    fn rolled_faces(&self) -> Vec<&DieRoll> { self.rolls[0].rolled_faces() }
-    
-    /// Returns the totals from the first roll
-    fn totals(&self) -> Values { self.rolls[0].totals() }
-    
     /// Simpy returns "Result of # rolls"
     fn intermediate_results(&self) -> String { 
         format!("Result of {} rolls", self.rolls.len()) }
