@@ -1,16 +1,16 @@
 use std::rc::Rc;
 use crate::{
+    Value, Values,
     random::Rng, 
-    rollers::{DieRoll, Roll, Roller, Value}, 
-    str_util::wrapped_text, 
-    Values };
+    rollers::{SubRoll, SubRoller,DieRoll, Roll, Roller},
+    str_util::wrapped_text };
 
 pub struct ModifierRoller {
-    roller: Rc<dyn ComposableRoller>,
+    roller: Rc<dyn SubRoller>,
     modifier: Value
 }
 impl ModifierRoller {
-    pub fn new(roller: Rc<dyn ComposableRoller>, modifier: Value) -> Rc<Self> {
+    pub fn new(roller: Rc<dyn SubRoller>, modifier: Value) -> Rc<Self> {
         Rc::new(Self{ roller, modifier }) }
 }
 impl Roller for ModifierRoller {    
@@ -22,20 +22,20 @@ impl Roller for ModifierRoller {
     fn roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn Roll> {
         ModifierRoll::new(self.roller.clone().composable_roll(rng), self.modifier.clone()) }
 }
-impl ComposableRoller for ModifierRoller {
+impl SubRoller for ModifierRoller {
     fn is_simple(&self) -> bool { true }
-    
-    fn composable_roll(self: Rc<Self>, rng: Rng) -> Box<dyn ComposableRoll> { 
+
+    fn sub_roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn SubRoll> { 
         ModifierRoll::new(self.roller.clone().composable_roll(rng), self.modifier.clone()) }
 }
 
 
 pub struct ModifierRoll {
-    inner_result: Box<dyn ComposableRoll>,
+    inner_result: Box<dyn SubRoll>,
     modifier: Value
 }
 impl ModifierRoll {
-    fn new(inner_result: Box<dyn ComposableRoll>, modifier: Value) -> Box<Self> {
+    fn new(inner_result: Box<dyn SubRoll>, modifier: Value) -> Box<Self> {
         Box::new(Self { inner_result, modifier}) }
 }
 impl Roll for ModifierRoll {
@@ -47,7 +47,7 @@ impl Roll for ModifierRoll {
     
     fn final_result(&self) -> String { self.totals().to_string() }
 }
-impl ComposableRoll for ModifierRoll {
+impl SubRoll for ModifierRoll {
     fn is_simple(&self) -> bool { true }
     
     fn rolled_faces(&self) -> Vec<&DieRoll> { (&self.inner_result).rolled_faces() }
@@ -62,20 +62,20 @@ impl ComposableRoll for ModifierRoll {
 mod tests {
     use std::rc::Rc;
     use crate::dice::{Die, Face};
-    use crate::relationships::{BasicRelationship, DNumRelationship};
-    use crate::{Relationship, Value};
+    use crate::units::{BasicUnit, DNumUnit};
+    use crate::{Unit, Value};
 
-    fn test_die() -> (Rc<dyn Relationship>, Rc<dyn Relationship>, Rc<Die>) {
-        let relationship1 = BasicRelationship::new("Successes".to_string(), "{} Successes".to_string(), false);
-        let relationship2 = DNumRelationship::new();
+    fn test_die() -> (Rc<dyn Unit>, Rc<dyn Unit>, Rc<Die>) {
+        let unit1 = BasicUnit::new("Successes".to_string(), "{} Successes".to_string(), false);
+        let unit2 = DNumUnit::new();
         let die = Die::new("Mixer".to_string(), vec![
             Face::new("both".to_string(), vec![
-                Value{relationship: relationship1.clone(), value: 1},
-                Value{relationship: relationship2.clone(), value: 1}]),
+                Value{ unit: unit1.clone(), value: 1},
+                Value{ unit: unit2.clone(), value: 1}]),
             Face::new("basic".to_string(), vec![
-                Value{relationship:relationship2.clone(), value: 2}]),
+                Value{ unit: unit2.clone(), value: 2}]),
             Face::new("successor".to_string(), vec![
-                Value{relationship: relationship1.clone(), value: 2}])
+                Value{ unit: unit1.clone(), value: 2}])
         ]);
-        (relationship1, relationship2, die) }
+        (unit1, unit2, die) }
 }

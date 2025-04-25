@@ -124,7 +124,7 @@ pub trait Roller {
 /// This should be written exactly the same as `roll_with()` on `Roller`, except that you
 /// may need to do a downcast. Most likely, though, it will be an automatic cast from the
 /// static type to the dynamic type. 
-pub trait ComposableRoller: Roller {
+pub trait SubRoller: Roller {
     /// When generating a description (using `description()`), you want to know whether
     /// it's necessary to wrap the text description of an inner `Roller` with parentheses
     /// to make it clearer and easier to understand. But you don't want unnecessary
@@ -147,7 +147,7 @@ pub trait ComposableRoller: Roller {
     /// The same as `roll_with()`, but returns a `ComposableRoll` to avoid needing to
     /// upcast or downcast. When a wrapper `Roller` calls a roll method of an inner 
     /// `Roller`, it should be this one.
-    fn composable_roll(self: Rc<Self>, rng: Rng) -> Box<dyn ComposableRoll>;
+    fn sub_roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn SubRoll>;
 }
   
 
@@ -213,7 +213,7 @@ pub trait Roll {
 /// ##Implementing `totals()`
 /// Using the `Values` objects from inner `Roll`s' `totals()` methods, combine them and add and 
 /// subtract from them as dictated by this `Roll`'s effects, then return the resulting `Values`
-pub trait ComposableRoll: Roll {
+pub trait SubRoll: Roll {
     /// Used to determine whether `intermediate_results()` calls of wrapper `Roll`s should wrap your
     /// `intermediate_results()` call in parentheses to make the output clearer and easier to read.
     /// this decision is made automatically by `composable_intermediate_results()` using the return

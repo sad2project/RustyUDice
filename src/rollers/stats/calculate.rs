@@ -2,12 +2,12 @@ use std::{
     collections::HashMap,
     rc::Rc };
 use crate::{
-    {Relationship, Value, Values},
+    {Unit, Value, Values},
     rollers::CollectedStats };
-use crate::rollers::RelationshipStats;
+use crate::rollers::UnitStats;
 
 pub struct CollectedStatsBuilder {
-    stats: Vec<RelationshipStatsCalculator>
+    stats: Vec<UnitStatsCalculator>
 }
 impl CollectedStatsBuilder {
     pub(crate) fn new(roll_vals: Vec<Values>) -> Self { 
@@ -32,7 +32,7 @@ impl CollectedStatsBuilder {
                 return; } }
         // if we get here, there was no match, so we make a new one and add it
         self.stats.push(
-            RelationshipStatsCalculator::new(value, size));
+            UnitStatsCalculator::new(value, size));
     }
 
     fn finish(&mut self) {
@@ -48,27 +48,27 @@ impl CollectedStatsBuilder {
 }
 
 
-pub struct RelationshipStatsCalculator {
-    relationship: Rc<dyn Relationship>,
+pub struct UnitStatsCalculator {
+    unit: Rc<dyn Unit>,
     values: Vec<i32>
 }
 
-impl RelationshipStatsCalculator {
+impl UnitStatsCalculator {
     fn new(value: Value, size: u32) -> Self {
         let mut values = Vec::with_capacity(size as usize);
         values.push(value.value);
-        Self { relationship: value.relationship, values }
+        Self { unit: value.unit, values }
     }
 
     fn add_on_match(&mut self, value: Value) -> bool {
-        if self.has_same_relationship(value.relationship) {
+        if self.has_same_unit(value.unit) {
             self.values.push(value.value);
             true }
         else {
             false } }
 
-    pub fn has_same_relationship(&self, relationship: Rc<dyn Relationship>) -> bool {
-        self.relationship.id() == relationship.id() }
+    pub fn has_same_unit(&self, relationship: Rc<dyn Unit>) -> bool {
+        self.unit.id() == relationship.id() }
     
     // Fill the rest of the space with 0s and sort the values    
     fn finish(&mut self) {
@@ -120,14 +120,14 @@ impl RelationshipStatsCalculator {
             // square root to finish with standard deviation
             .sqrt() }
 
-    pub fn calc_all(self) -> RelationshipStats {
+    pub fn calc_all(self) -> UnitStats {
         let average = self.average();
-        RelationshipStats {
+        UnitStats {
             average,
             median: self.median(),
             mode: self.mode(),
             std_deviation: self.std_deviation(average),
-            relationship: self.relationship.clone(),
+            unit: self.unit.clone(),
             values: self.values, }
     }
 }

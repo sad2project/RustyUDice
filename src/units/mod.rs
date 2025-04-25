@@ -2,40 +2,40 @@ use std::{
     fmt::{Debug, Display, Error, Formatter},
     rc::Rc };
 use crate::{
-    Relationship,
+    Unit,
     u64_gen::get_u64 };
 
 pub mod tiered;
-pub use tiered::{TieredRelationship, Tier};
+pub use tiered::{TieredUnit, Tier};
 
 
-pub struct DNumRelationship;
-impl DNumRelationship {
-    pub fn new() -> Rc<Self> { Rc::new(DNumRelationship) }
+pub struct DNumUnit;
+impl DNumUnit {
+    pub fn new() -> Rc<Self> { Rc::new(DNumUnit) }
 }
-impl Relationship for DNumRelationship {
+impl Unit for DNumUnit {
     fn id(&self) -> u64 { 0 }
     
     fn output_for(&self, total: i32) -> String { total.to_string() }
 }
-impl Display for DNumRelationship {
+impl Display for DNumUnit {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         f.write_str("Total") }
 }
-impl Debug for DNumRelationship {
+impl Debug for DNumUnit {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         f.write_str("Default Numeric") }
 }
 
 
 #[derive(Debug)]
-pub struct BasicRelationship {
+pub struct BasicUnit {
     id: u64,
     name: String,
     output_format: String,
     ignore_zero: bool,
 }
-impl BasicRelationship {
+impl BasicUnit {
     pub fn new(name: String, output_format: String, ignore_zero: bool) -> Rc<Self> { 
         Rc::new(Self { 
             id: get_u64(), 
@@ -50,7 +50,7 @@ impl BasicRelationship {
             output_format, 
             ignore_zero}) }
 }
-impl Relationship for BasicRelationship {
+impl Unit for BasicUnit {
     fn id(&self) -> u64 { self.id }
     
     fn output_for(&self, total: i32) -> String {
@@ -59,7 +59,7 @@ impl Relationship for BasicRelationship {
             .replace("{|}", &total.abs().to_string())
             .replace("{}", &total.to_string()) }
 }
-impl Display for BasicRelationship {
+impl Display for BasicUnit {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         f.write_fmt(format_args!("{}", self.name)) }
 }

@@ -6,14 +6,14 @@ use std::{
     ops::Deref,
     rc::Rc };
 use crate::{
-    {Relationship, Values},
+    {Unit, Values},
     random::Rng,
     rollers::{Roller, Roll, DieRoll} };
 
 /// `StatsRoller` is used to find out the statistics of a
 /// roll. It'll perform the given `Roller`'s roll a number of times
 /// given, then provide the average, median, mode, and standard 
-/// deviation for each `Relationship`. You can also extract the
+/// deviation for each `Unit`. You can also extract the
 /// results of each individual roll and calculate any other desired
 /// statistics based on that, such as graphing the results out somehow.
 ///
@@ -22,11 +22,11 @@ use crate::{
 /// `StatisticsRoll`, `average()`, `median()`, `mode()`, and 
 /// `std_deviation()`, which will return `Stat`s.
 /// 
-/// Unfortunately, since `Relationship`s work with integer numbers and the
+/// Unfortunately, since `Unit`s work with integer numbers and the
 /// stats use floating point numbers (though, median and mode don't NEED to;
 /// they're simply kept consistent with the others that do), we can't convert
-/// the numbers into the `Relationship`'s output. It will simply have the
-/// `Relationship` and the value printed side-by-side.
+/// the numbers into the `Unit`'s output. It will simply have the
+/// `Unit` and the value printed side-by-side.
 pub struct StatsRoller {
     runs: u32,
     roller: Rc<dyn Roller>,
@@ -63,8 +63,8 @@ impl StatisticsRoll {
         let builder = CollectedStatsBuilder::new(roll_vals);
         builder.build() }
     
-    pub fn stats_for(&self, relationship: Rc<dyn Relationship>) -> Option<&RelationshipStats> {
-        self.collected_stats.for_relationship(relationship) }
+    pub fn stats_for(&self, unit: Rc<dyn Unit>) -> Option<&UnitStats> {
+        self.collected_stats.for_unit(unit) }
     
     pub fn averages(&self) -> Stat { self.collected_stats.averages() }
     
@@ -92,12 +92,12 @@ impl Roll for StatisticsRoll {
 
 
 pub struct CollectedStats {
-  stats: Vec<RelationshipStats>
+  stats: Vec<UnitStats>
 }
 impl CollectedStats {
-    pub fn for_relationship(&self, relationship: Rc<dyn Relationship>) -> Option<&RelationshipStats> {
+    pub fn for_unit(&self, unit: Rc<dyn Unit>) -> Option<&UnitStats> {
         for rstats in self.stats.iter() {
-            if rstats.has_same_relationship(relationship.clone()) {
+            if rstats.has_same_unit(unit.clone()) {
                 return Some(rstats) } }
         None }
     
@@ -106,7 +106,7 @@ impl CollectedStats {
             stat_type: StatType::Average,
             values: self.stats.iter()
                 .map(|rstats| StatValue {
-                   relationship: rstats.relationship.clone(),
+                   unit: rstats.unit.clone(),
                     value: rstats.average })
                 .collect() } }
                 
@@ -115,7 +115,7 @@ impl CollectedStats {
             stat_type: StatType::Median,
             values: self.stats.iter()
                 .map(|rstats| StatValue {
-                   relationship: rstats.relationship.clone(),
+                   unit: rstats.unit.clone(),
                     value: rstats.median })
                 .collect() } }
     
@@ -124,7 +124,7 @@ impl CollectedStats {
             stat_type: StatType::Mode,
             values: self.stats.iter()
                 .map(|rstats| StatValue {
-                   relationship: rstats.relationship.clone(),
+                   unit: rstats.unit.clone(),
                     value: rstats.mode })
                 .collect() } }
                 
@@ -133,7 +133,7 @@ impl CollectedStats {
             stat_type: StatType::StdDeviation,
             values: self.stats.iter()
                 .map(|rstats| StatValue {
-                   relationship: rstats.relationship.clone(),
+                   unit: rstats.unit.clone(),
                     value: rstats.std_deviation })
                 .collect() } }
 }
@@ -159,9 +159,9 @@ pub struct Stat {
     values: Vec<StatValue>
 }
 impl Stat {
-    pub fn for_relationship(&self, relationship: Rc<dyn Relationship>) -> Option<f32> {
+    pub fn for_unit(&self, unit: Rc<dyn Unit>) -> Option<f32> {
         for stat_val in self.values.iter() {
-            if stat_val.has_same_relationship(relationship.clone()) {
+            if stat_val.has_same_unit(unit.clone()) {
                 return Some(stat_val.value) } }
         None }
     
@@ -182,28 +182,28 @@ impl Display for Stat {
 
 
 pub struct StatValue {
-    relationship: Rc<dyn Relationship>,
+    unit: Rc<dyn Unit>,
     value: f32,
 }
 impl StatValue {
-    pub fn has_same_relationship(&self, relationship: Rc<dyn Relationship>) -> bool {
-        self.relationship.deref() == relationship.deref() }
+    pub fn has_same_unit(&self, unit: Rc<dyn Unit>) -> bool {
+        self.unit.deref() == unit.deref() }
 }
 impl Display for StatValue {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_fmt(format_args!("{}: {:.2}", self.relationship, self.value)) }
+        f.write_fmt(format_args!("{}: {:.2}", self.unit, self.value)) }
 }
 
 
-pub struct RelationshipStats {
-    pub relationship: Rc<dyn Relationship>,
+pub struct UnitStats {
+    pub unit: Rc<dyn Unit>,
     pub values: Vec<i32>,
     pub average: f32,
     pub median: f32,
     pub mode: f32,
     pub std_deviation: f32
 }
-impl RelationshipStats {
-    pub fn has_same_relationship(&self, relationship: Rc<dyn Relationship>) -> bool {
-        self.relationship.deref() == relationship.deref() }
+impl UnitStats {
+    pub fn has_same_unit(&self, unit: Rc<dyn Unit>) -> bool {
+        self.unit.deref() == unit.deref() }
 }

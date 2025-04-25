@@ -3,8 +3,8 @@ use std::{
     rc::Rc,
 };
 use crate::{
-    {Relationship, Values},
-    rollers::{DieRoll, Roll, Roller},
+    {Unit, Values},
+    rollers::{DieRoll, Roll, Roller, SubRoll, SubRoller},
     random::Rng,
     str_util::wrapped_text
 };
@@ -16,8 +16,8 @@ use self::Strategy::*;
 /// a list of `Relationship`s by which to sort the rolls in order to determine 
 /// which are the lowest or highest. 
 pub enum Strategy {
-    DropLowest{ count: u8, order_by: Vec<Rc<dyn Relationship>> },
-    DropHighest{ count: u8, order_by: Vec<Rc<dyn Relationship>> },
+    DropLowest{ count: u8, order_by: Vec<Rc<dyn Unit>> },
+    DropHighest{ count: u8, order_by: Vec<Rc<dyn Unit>> },
     KeepAll
 }
 impl Strategy {
@@ -40,7 +40,7 @@ impl Strategy {
     /// we need to support both options, we'll need a field in Relationship to hold the default 
     /// value, either as an i32 (most flexible) or enum with the options of Zero and Min (more 
     /// compact, maybe).
-    fn order_comparator(&self, roll1: &Box<dyn ComposableRoll>, roll2: &Box<dyn ComposableRoll>) -> Ordering {
+    fn order_comparator(&self, roll1: &Box<dyn SubRoll>, roll2: &Box<dyn SubRoll>) -> Ordering {
         match self {
             KeepAll => { Ordering::Equal }
             DropLowest {count: _, order_by: order}
@@ -92,7 +92,7 @@ impl Strategy {
 /// lowest result. 
 pub struct PoolRoller {
     count: u8,
-    die: Rc<dyn ComposableRoller>,
+    die: Rc<dyn SubRoller>,
     strategy: Strategy,
 }
 impl PoolRoller {
@@ -102,14 +102,14 @@ impl PoolRoller {
     /// effective with the given "die", including an empty one. In cases where it has
     /// no effect, DropLowest will simply drop the earliest roll(s) and DropHighest will
     /// simply drop the latest roll(s)
-    pub fn new(count: u8, die: Rc<dyn ComposableRoller>, strategy: Strategy) -> Option<Rc<Self>> {
+    pub fn new(count: u8, die: Rc<dyn SubRoller>, strategy: Strategy) -> Option<Rc<Self>> {
         if strategy.count() >= count { None }
         else { Some(Rc::new(Self { count, die, strategy })) } }
 
     pub fn basic(count: u8, die: Rc<dyn Roller>) -> Rc<Self> {
         Rc::new (Self { count, die, strategy: Strategy::KeepAll }) }
 
-    pub fn better_of(die: Rc<dyn ComposableRoller>, order_by: Vec<Rc<dyn Relationship>>) -> Rc<Self> {
+    pub fn better_of(die: Rc<dyn SubRoller>, order_by: Vec<Rc<dyn Unit>>) -> Rc<Self> {
         Rc::new(Self {
             count: 2,
             die,
@@ -125,7 +125,7 @@ impl Roller for PoolRoller {
         format!("{}{} {}", self.count, inner, self.strategy.descriptor()) }
 
     fn roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn Roll> {
-        let mut rolls: Vec<Box<dyn ComposableRoll>> = Vec::with_capacity(self.count as usize);
+        let mut rolls: Vec<Box<dyn SubRoll>> = Vec::with_capacity(self.count as usize);
         for _ in 0..self.count {
             rolls.push(self.die.clone().composable_roll(rng));
         }
@@ -149,11 +149,11 @@ impl Roller for PoolRoller {
                     rolls,
                     dropped ) } } }
 }
-impl ComposableRoller for PoolRoller {
+impl SubRoller for PoolRoller {
     fn is_simple(&self) -> bool { self.die.is_simple() && self.strategy.is_simple() }
     
-    fn composable_roll(self: Rc<Self>, rng: Rng) -> Box<dyn ComposableRoll> {
-        let mut rolls: Vec<Box<dyn ComposableRoll>> = Vec::with_capacity(self.count as usize);
+    fn sub_roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn SubRoll> {
+        let mut rolls: Vec<Box<dyn SubRoll>> = Vec::with_capacity(self.count as usize);
         for _ in 0..self.count {
             rolls.push(self.die.clone().composable_roll(rng));
         }
@@ -180,11 +180,11 @@ impl ComposableRoller for PoolRoller {
 
 
 struct PoolRoll {
-    kept_rolls: Vec<Box<dyn ComposableRoll>>,
-    dropped_rolls: Vec<Box< dyn ComposableRoll>>,
+    kept_rolls: Vec<Box<dyn SubRoll>>,
+    dropped_rolls: Vec<Box< dyn SubRoll>>,
 }
 impl PoolRoll {
-    fn new(kept_rolls: Vec<Box<dyn ComposableRoll>>, dropped_rolls: Vec<Box<dyn ComposableRoll>>) -> Box<Self> {
+    fn new(kept_rolls: Vec<Box<dyn SubRoll>>, dropped_rolls: Vec<Box<dyn SubRoll>>) -> Box<Self> {
         Box::new(Self {kept_rolls, dropped_rolls}) }
 
     fn build_intermediate_results_part(rolls: &Vec<Box<dyn Roll>>, separator: &str) -> String {
@@ -205,7 +205,7 @@ impl Roll for PoolRoll {
     
     fn final_result(&self) -> String { self.totals().to_string() }
 }
-impl ComposableRoll for PoolRoll {
+impl SubRoll for PoolRoll {
     fn is_simple(&self) -> bool { self.dropped_rolls.len() == 0 }
 
     /// Returns the rolled faces of just the kept rolls

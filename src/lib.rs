@@ -41,17 +41,18 @@ use std::{
     ops::Deref,
     rc::Rc };
 use std::fmt::Debug;
+use std::ops::Neg;
 
 pub mod dice;
 pub mod premade;
-pub mod relationships;
+pub mod units;
 pub mod rollers;
 pub mod random;
 mod str_util;
 mod u64_gen;
 
 
-pub trait Relationship: Debug + Display {
+pub trait Unit: Debug + Display {
     fn id(&self) -> u64;
     /// If the relationship's outcome should be ignored (such as everything being 
     /// cancelled out, i.e. banes and boons totalling to zero), then return an
@@ -60,7 +61,7 @@ pub trait Relationship: Debug + Display {
     fn output_for(&self, total: i32) -> String;
 }
 
-impl PartialEq for &dyn Relationship {
+impl PartialEq for &dyn Unit {
     fn eq(&self, other: &Self) -> bool { self.id() == other.id() }
 }
 
@@ -70,37 +71,43 @@ impl PartialEq for &dyn Relationship {
 /// is for `Roll`s and totalling up their values.
 #[derive(Clone, Debug)]
 pub struct Value {
-    pub relationship: Rc<dyn Relationship>,
+    pub unit: Rc<dyn Unit>,
     pub value: i32,
 }
 impl Value {
    fn add(&mut self, other: Value) -> bool {
-      if self.has_same_relationship(&other) {
+      if self.has_same_unit(&other) {
          self.value += other.value;
          true }
       else { 
           false } }
    
    fn subtract(&mut self, other: Value) -> bool {
-       if self.has_same_relationship(&other) {
+       if self.has_same_unit(&other) {
            self.value -= other.value;
            true }
        else {
            false } } 
     
-   pub fn has_same_relationship(&self, other: &Value) -> bool {
-      self.relationship.deref() == other.relationship.deref() }
+   pub fn has_same_unit(&self, other: &Value) -> bool {
+      self.unit.deref() == other.unit.deref() }
 
-   pub fn output(&self) -> String { self.relationship.output_for(self.value) }
+   pub fn output(&self) -> String { self.unit.output_for(self.value) }
 }
 impl Display for Value {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_fmt(format_args!("{}: {}", self.relationship, self.value))
+        f.write_fmt(format_args!("{}: {}", self.unit, self.value))
     }
 }
 impl PartialEq for Value {
     fn eq(&self, other: &Self) -> bool {
-        self.has_same_relationship(other) && self.value == other.value }
+        self.has_same_unit(other) && self.value == other.value }
+}
+impl Neg for Value {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        Value { unit: self.unit, value: self.value * -1 } }
 }
 
 
@@ -155,11 +162,17 @@ impl Values {
         for value in values.into_iter() {
             self.subtract_value(value.clone()) } }
     
-    pub fn get(&self, relationship: Rc<dyn Relationship>) -> Option<i32> {
+    pub fn get(&self, unit: Rc<dyn Unit>) -> Option<i32> {
         for value in &self.values {
-            if value.relationship.deref() == relationship.deref() { 
+            if value.unit.deref() == unit.deref() { 
                 return Some(value.value) } }
         None } 
+}
+impl Neg for Values {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        Values { values: self.values.iter().map(Value::neg).collect() } }
 }
 impl <'a> IntoIterator for &'a Values {
     type Item = &'a Value;
