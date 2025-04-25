@@ -1,3 +1,4 @@
+use std::process::Output;
 use std::rc::Rc;
 use crate::{
     random::Rng,
@@ -47,15 +48,15 @@ impl MultiRoller {
 impl Roller for MultiRoller {
     fn description(&self) -> String {
         self.inner.iter().enumerate()
-          .map(|idx, roller| roller.description(idx))
-          .collect()
+          .map(|(idx, roller)| roller.description(idx))
+          .collect::<Vec<String>>()
           .join("\n") }
     
-    fn roll_with(&self, rng: Rng) -> Rc<dyn Roll> {
+    fn roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn Roll> {
         self.inner.iter().enumerate()
-          .map(|idx, roller| roller.roll_with(idx, rng))
+          .map(|(idx, roller)| roller.roll_with(idx, rng))
           .collect::<MultiRoll>()
-          .rc() }
+          .boxed() }
 }
 
 
@@ -76,22 +77,22 @@ struct MultiRoll {
     inner: Vec<NamedRoll>
 }
 impl MultiRoll {
-    fn rc(self) -> Rc<Self> { Rc::new(self) }
+    fn boxed(self) -> Box<Self> { Box::new(self) }
 }
 impl Roll for MultiRoll {
     fn intermediate_results(&self) -> String {
         self.inner.iter()
           .map(NamedRoll::intermediate_results)
-          .collect()
+          .collect::<Vec<String>>()
           .join("\n") }
     
     fn final_result(&self) -> String {
         self.inner.iter()
           .map(NamedRoll::final_result)
-          .collect()
+          .collect::<Vec<String>>()
           .join("\n") }
 }
 impl FromIterator<NamedRoll> for MultiRoll {
     fn from_iter<T: IntoIterator<Item=NamedRoll>>(iter: T) -> Self {
-        MultiRoll { inner: iter.collect() } }
+        MultiRoll { inner: iter.into_iter().collect() } }
 }

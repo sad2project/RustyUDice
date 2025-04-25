@@ -20,13 +20,13 @@ impl Roller for ModifierRoller {
     }
 
     fn roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn Roll> {
-        ModifierRoll::new(self.roller.clone().composable_roll(rng), self.modifier.clone()) }
+        ModifierRoll::new(self.roller.clone().sub_roll_with(rng), self.modifier.clone()) }
 }
 impl SubRoller for ModifierRoller {
     fn is_simple(&self) -> bool { true }
 
     fn sub_roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn SubRoll> { 
-        ModifierRoll::new(self.roller.clone().composable_roll(rng), self.modifier.clone()) }
+        ModifierRoll::new(self.roller.clone().sub_roll_with(rng), self.modifier.clone()) }
 }
 
 
