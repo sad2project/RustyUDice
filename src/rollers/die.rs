@@ -44,8 +44,6 @@ impl Roll for DieRoll {
 }
 impl SubRoll for DieRoll {
     fn is_simple(&self) -> bool { true }
-    
-    fn is_die(&self) -> bool { true }
 
     fn rolled_faces(&self) -> Vec<&DieRoll> {
         vec![self] }
