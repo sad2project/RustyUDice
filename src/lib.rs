@@ -170,9 +170,13 @@ impl Values {
 }
 impl Neg for Values {
     type Output = Self;
-
     fn neg(self) -> Self::Output {
-        Values { values: self.values.iter().map(Value::neg).collect() } }
+        Values { values: self.values.into_iter().map(Value::neg).collect() } }
+}
+impl IntoIterator for Values {
+    type Item = Value;
+    type IntoIter = std::vec::IntoIter<Value>;
+    fn into_iter(self) -> Self::IntoIter { self.values.into_iter() }
 }
 impl <'a> IntoIterator for &'a Values {
     type Item = &'a Value;
