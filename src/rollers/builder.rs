@@ -3,7 +3,7 @@ use std::{
     rc::Rc };
 use crate::{
     {Unit, Value},
-    rollers::{SubRoller, ModifierRoller, PoolRoller, AddRoller} };
+    rollers::{SubRoller, ModifierRoller, PoolRoller, MathRoller} };
 
 struct Builder(Rc<dyn SubRoller>);
 impl Builder {
@@ -18,7 +18,7 @@ impl Add<Rc<dyn SubRoller>> for Builder {
     type Output = Self;
     
     fn add(self, rhs: Rc<dyn SubRoller>) -> Builder {
-        Builder(AddRoller::new(self.0, rhs)) }
+        Builder(MathRoller::plus(self.0, rhs)) }
 }
 impl Add<Value> for Builder {
     type Output = Self;
