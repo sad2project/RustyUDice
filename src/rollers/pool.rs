@@ -62,11 +62,11 @@ impl Strategy {
         match self {
             KeepAll => String::new(), 
             DropLowest{ count, order_by: _} => 
-                if *count == 1 { String::from("drop lowest") }
-                else { format!("drop lowest {}", count) },
+                if *count == 1 { String::from(" drop lowest") }
+                else { format!(" drop lowest {}", count) },
             DropHighest{ count, order_by: _} => 
-                if *count == 1 { String::from("drop highest") }
-                else { format!("drop highest {}", count) } } } 
+                if *count == 1 { String::from(" drop highest") }
+                else { format!(" drop highest {}", count) } } } 
 }
 
 
@@ -106,7 +106,7 @@ impl PoolRoller {
         if strategy.count() >= count { None }
         else { Some(Rc::new(Self { count, die, strategy })) } }
 
-    pub fn basic(count: u8, die: Rc<dyn Roller>) -> Rc<Self> {
+    pub fn basic(count: u8, die: Rc<dyn SubRoller>) -> Rc<Self> {
         Rc::new (Self { count, die, strategy: Strategy::KeepAll }) }
 
     pub fn better_of(die: Rc<dyn SubRoller>, order_by: Vec<Rc<dyn Unit>>) -> Rc<Self> {
@@ -117,17 +117,15 @@ impl PoolRoller {
 }
 impl Roller for PoolRoller {
     fn description(&self) -> String {
-        let mut output = if self.die.is_die() { format!
-        match self.strategy {
-          KeepAll => if self.die.is_die() { format!("{}{}"
-        }
-        let inner = crate::str_util::wrapped_text(&*self.die.description(), self.die.is_simple());
-        format!("{}{} {}", self.count, inner, self.strategy.descriptor()) }
+        if self.die.is_die() { 
+            format!("{}{}{}", self.count, self.die.description(), self.strategy.descriptor()) }
+        else { 
+            format!("{}({}){}", self.count, self.die.description(), self.strategy.descriptor()) } }
 
     fn roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn Roll> {
         let mut rolls: Vec<Box<dyn SubRoll>> = Vec::with_capacity(self.count as usize);
         for _ in 0..self.count {
-            rolls.push(self.die.clone().composable_roll(rng));
+            rolls.push(self.die.clone().sub_roll_with(rng));
         }
         match self.strategy {
             KeepAll => {
@@ -155,7 +153,7 @@ impl SubRoller for PoolRoller {
     fn sub_roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn SubRoll> {
         let mut rolls: Vec<Box<dyn SubRoll>> = Vec::with_capacity(self.count as usize);
         for _ in 0..self.count {
-            rolls.push(self.die.clone().composable_roll(rng));
+            rolls.push(self.die.clone().sub_roll_with(rng));
         }
         match self.strategy {
             KeepAll => {
@@ -187,7 +185,7 @@ impl PoolRoll {
     fn new(kept_rolls: Vec<Box<dyn SubRoll>>, dropped_rolls: Vec<Box<dyn SubRoll>>) -> Box<Self> {
         Box::new(Self {kept_rolls, dropped_rolls}) }
 
-    fn build_intermediate_results_part(rolls: &Vec<Box<dyn Roll>>, separator: &str) -> String {
+    fn build_intermediate_results_part(rolls: &Vec<Box<dyn SubRoll>>, separator: &str) -> String {
         rolls.iter()
             .map(|roll| wrapped_text(&roll.intermediate_results(), roll.is_simple()))
             .collect::<Vec<String>>()
