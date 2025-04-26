@@ -102,11 +102,11 @@ impl PoolRoller {
     /// effective with the given "die", including an empty one. In cases where it has
     /// no effect, DropLowest will simply drop the earliest roll(s) and DropHighest will
     /// simply drop the latest roll(s)
-    pub fn new(count: u8, die: Rc<dyn SubRoller>, strategy: Strategy) -> Option<Rc<Self>> {
+    pub fn new(die: Rc<dyn SubRoller>, count: u8, strategy: Strategy) -> Option<Rc<Self>> {
         if strategy.count() >= count { None }
         else { Some(Rc::new(Self { count, die, strategy })) } }
 
-    pub fn basic(count: u8, die: Rc<dyn SubRoller>) -> Rc<Self> {
+    pub fn basic(die: Rc<dyn SubRoller>, count: u8) -> Rc<Self> {
         Rc::new (Self { count, die, strategy: Strategy::KeepAll }) }
 
     pub fn better_of(die: Rc<dyn SubRoller>, order_by: Vec<Rc<dyn Unit>>) -> Rc<Self> {

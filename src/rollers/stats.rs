@@ -32,7 +32,7 @@ pub struct StatsRoller {
     roller: Rc<dyn SubRoller>,
 }
 impl StatsRoller {
-    pub fn new(num_runs: u32, roller: Rc<dyn SubRoller>) -> Rc<Self> {
+    pub fn new(roller: Rc<dyn SubRoller>, num_runs: u32) -> Rc<Self> {
         Rc::new(Self { runs: num_runs, roller }) }
 }
 impl Roller for StatsRoller {

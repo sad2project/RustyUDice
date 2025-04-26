@@ -29,7 +29,6 @@ mod multi;
 mod modifier;
 mod pool;
 mod stats;
-mod builder;
 
 pub use self::{
     die::*,
@@ -37,8 +36,7 @@ pub use self::{
     multi::*,
     modifier::*,
     pool::*,
-    stats::*,
-    builder::* };
+    stats::* };
 
 use std::{
     rc::Rc,
@@ -122,7 +120,7 @@ pub trait Roller {
 /// This should be written exactly the same as `roll_with()` on `Roller`, except that you
 /// may need to do a downcast. Most likely, though, it will be an automatic cast from the
 /// static type to the dynamic type. 
-pub trait SubRoller: Roller {
+pub trait SubRoller: Roller where Self: 'static {
     /// When generating a description (using `description()`), you want to know whether
     /// it's necessary to wrap the text description of an inner `Roller` with parentheses
     /// to make it clearer and easier to understand. But you don't want unnecessary
@@ -146,6 +144,27 @@ pub trait SubRoller: Roller {
     /// upcast or downcast. When a wrapper `Roller` calls a roll method of an inner 
     /// `Roller`, it should be this one.
     fn inner_roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn SubRoll>;
+    
+    fn n_times(self: Rc<Self>, n: u8) -> Rc<PoolRoller> where Self: Sized {
+        PoolRoller::basic(self.clone(), n) }
+    
+    fn n_times_and(self: Rc<Self>, n: u8, strategy: Strategy) -> Option<Rc<PoolRoller>> where Self: Sized {
+        PoolRoller::new(self, n, strategy) }
+    
+    fn plus(self: Rc<Self>, other: Rc<dyn SubRoller>) -> Rc<MathRoller> where Self: Sized {
+        MathRoller::add(self, other) }
+    
+    fn minus(self: Rc<Self>, other: Rc<dyn SubRoller>) -> Rc<MathRoller> where Self: Sized {
+        MathRoller::subtract(self, other) }
+    
+    fn plus_modifier(self: Rc<Self>, value: Value) -> Rc<ModifierRoller> where Self: Sized {
+        ModifierRoller::new(self, value) }
+    
+    fn minus_modifier(self: Rc<Self>, value: Value) -> Rc<ModifierRoller> where Self: Sized {
+        ModifierRoller::new(self, -value) }
+    
+    fn get_stats(self: Rc<Self>, num_runs: u32) -> Rc<StatsRoller> where Self: Sized {
+        StatsRoller::new(self, num_runs) }
 }
   
 
