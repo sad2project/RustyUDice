@@ -3,7 +3,7 @@ use std::{
     rc::Rc };
 use crate::{
     Unit,
-    u64_gen::get_u64 };
+    random::new_id };
 
 pub mod tiered;
 pub use tiered::{TieredUnit, Tier};
@@ -38,7 +38,7 @@ pub struct BasicUnit {
 impl BasicUnit {
     pub fn new(name: String, output_format: String, ignore_zero: bool) -> Rc<Self> { 
         Rc::new(Self { 
-            id: get_u64(), 
+            id: new_id(), 
             name,
             output_format, 
             ignore_zero}) }

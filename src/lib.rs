@@ -48,7 +48,6 @@ pub mod premade;
 pub mod units;
 pub mod rollers;
 pub mod random;
-mod u64_gen;
 
 
 pub trait Unit: Debug + Display {

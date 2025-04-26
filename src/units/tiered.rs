@@ -1,8 +1,12 @@
-use std::fmt::{Display, Error, Formatter};
-use std::ops::RangeInclusive;
-use std::rc::Rc;
-use super::Unit;
-use crate::u64_gen::get_u64;
+use std::{
+    fmt::{Display, Error, Formatter},
+    ops::RangeInclusive,
+    rc::Rc };
+use crate:: {
+    units::Unit,
+    random::new_id };
+
+
 /// When the range of values changes how you'd give the output, you need a TieredUnit.
 /// For example, you might want and total of 0 or less to be "failure" and anything higher to be
 /// "X successes". To accomplish this, you need a TieredUnit with 2 Ranges; one that goes
@@ -21,7 +25,7 @@ pub struct TieredUnit {
 impl TieredUnit {
     pub fn new(name: String, tiers: impl Into<Vec<Tier>>) -> Rc<Self> { 
         Rc::new(Self { 
-            id: get_u64(), 
+            id: new_id(), 
             name,
             tiers: tiers.into() }) }
     
