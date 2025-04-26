@@ -8,7 +8,7 @@ use std::{
 use crate::{
     {Unit, Values},
     random::Rng,
-    rollers::{Roller, Roll, DieRoll} };
+    rollers::{Roller, Roll, SubRoll, SubRoller} };
 
 /// `StatsRoller` is used to find out the statistics of a
 /// roll. It'll perform the given `Roller`'s roll a number of times
@@ -29,10 +29,10 @@ use crate::{
 /// `Unit` and the value printed side-by-side.
 pub struct StatsRoller {
     runs: u32,
-    roller: Rc<dyn Roller>,
+    roller: Rc<dyn SubRoller>,
 }
 impl StatsRoller {
-    pub fn new(num_runs: u32, roller: Rc<dyn Roller>) -> Rc<Self> {
+    pub fn new(num_runs: u32, roller: Rc<dyn SubRoller>) -> Rc<Self> {
         Rc::new(Self { runs: num_runs, roller }) }
 }
 impl Roller for StatsRoller {
@@ -42,21 +42,21 @@ impl Roller for StatsRoller {
     fn roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn Roll> {
         StatisticsRoll::new(
             (0..self.runs)
-            .map(|_| self.roller.clone().roll_with(rng))
+            .map(|_| self.roller.clone().inner_roll_with(rng))
             .collect()) }
 }
 
 
 pub struct StatisticsRoll {
-    rolls: Vec<Box<dyn Roll>>,
+    rolls: Vec<Box<dyn SubRoll>>,
     collected_stats: CollectedStats
 }
 impl StatisticsRoll {
-    fn new(rolls: Vec<Box<dyn Roll>>) -> Box<Self> {
+    fn new(rolls: Vec<Box<dyn SubRoll>>) -> Box<Self> {
         let collected_stats = StatisticsRoll::run_calcs(&rolls);
         Box::new(Self{ rolls, collected_stats }) }
     
-    fn run_calcs(rolls: &Vec<Box<dyn Roll>>) -> CollectedStats{
+    fn run_calcs(rolls: &Vec<Box<dyn SubRoll>>) -> CollectedStats{
         let roll_vals: Vec<Values> = rolls.iter()
             .map(|roll| roll.totals())
             .collect();
@@ -80,9 +80,7 @@ impl Roll for StatisticsRoll {
         format!("Result of {} rolls", self.rolls.len()) }
     
     fn final_result(&self) -> String {
-        let mut output = String::with_capacity(83);
-        output.push_str(&self.intermediate_results());
-        format!("{}\n{}\n{}\n{}\n{}", 
+        format!("{}:\n{}\n{}\n{}\n{}", 
                 self.intermediate_results(),
                 self.averages(),
                 self.medians(),
