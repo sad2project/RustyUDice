@@ -94,10 +94,10 @@ use crate::{
 pub trait Roller {
     /// Returns a `String` that describes what the roller rolls. i.e. "2d8 + 6"
     fn description(&self) -> String;
-    
+
     /// "Rolls" the dice using the given random number generator and produces a `Roll`
     fn roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn Roll>;
-    
+
     /// "Rolls" the dice using the default random number generator and produces a `Roll`
     /// Do not override
     fn roll(self: Rc<Self>) -> Box<dyn Roll> { self.roll_with(default_rng()) }
@@ -128,45 +128,45 @@ pub trait SubRoller: Roller where Self: 'static {
     /// have `is_simple()`, which, if it returns `false`, lets the wrapper know the 
     /// description should be wrapped in parentheses. Used by `inner_description()`.
     fn is_simple(&self) -> bool;
-    
+
     /// This is just for the `Die``Roller` implementation to say `true` to, so just leave
     /// it as false
     fn is_die(&self) -> bool { false }
-    
+
     /// Uses `is_simple()` to determine whether to wrap `description()` in parentheses.
     /// Unless you possibly want to wrap it in something else, do not implement this 
     /// yourself.
     fn inner_description(&self) -> String {
         if self.is_simple() { self.description() }
         else { format!("({})", self.description() ) } }
-        
+
     /// The same as `roll_with()`, but returns a `ComposableRoll` to avoid needing to
     /// upcast or downcast. When a wrapper `Roller` calls a roll method of an inner 
     /// `Roller`, it should be this one.
     fn inner_roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn SubRoll>;
-    
+
     fn n_times(self: Rc<Self>, n: u8) -> Rc<PoolRoller> where Self: Sized {
         PoolRoller::basic(self.clone(), n) }
-    
+
     fn n_times_and(self: Rc<Self>, n: u8, strategy: Strategy) -> Option<Rc<PoolRoller>> where Self: Sized {
         PoolRoller::new(self, n, strategy) }
-    
+
     fn plus(self: Rc<Self>, other: Rc<dyn SubRoller>) -> Rc<MathRoller> where Self: Sized {
         MathRoller::add(self, other) }
-    
+
     fn minus(self: Rc<Self>, other: Rc<dyn SubRoller>) -> Rc<MathRoller> where Self: Sized {
         MathRoller::subtract(self, other) }
-    
+
     fn plus_modifier(self: Rc<Self>, value: Value) -> Rc<ModifierRoller> where Self: Sized {
         ModifierRoller::new(self, value) }
-    
+
     fn minus_modifier(self: Rc<Self>, value: Value) -> Rc<ModifierRoller> where Self: Sized {
         ModifierRoller::new(self, -value) }
-    
+
     fn get_stats(self: Rc<Self>, num_runs: u32) -> Rc<StatsRoller> where Self: Sized {
         StatsRoller::new(self, num_runs) }
 }
-  
+
 
 /// `Roll`s have the same dual nature of `Roller`s, being either plain `Roll`s or 
 /// `ComposableRoll`s. If you make a roller that implements `ComposableRoller`, then the
@@ -200,7 +200,7 @@ pub trait SubRoller: Roller where Self: 'static {
 pub trait Roll {
     /// Returns a `String` that lays out all the dice rolls and how they were combined together
     fn intermediate_results(&self) -> String;
-    
+
     /// Returns a `String` that summarizes the total of all the rolls and how they're combined together.
     fn final_result(&self) -> String;
 }
@@ -219,7 +219,7 @@ pub trait Roll {
 /// in parentheses when the `Roller`'s `description()` shouldn't, such as when a `description()`
 /// has a shorthand that doesn't apply to `intermediate_result()` (e.g. 20d6 vs all 20 of the rolls
 /// being listed out).
-/// 
+///
 /// ##Implementing `rolled_faces()`
 /// This is an easy one; get the `rolled_faces()` from every wrapped `Roll` and combine them into 
 /// a single Vector. It could be made with a default implementation, but that would require a new 
@@ -236,16 +236,16 @@ pub trait SubRoll: Roll {
     /// this decision is made automatically by `composable_intermediate_results()` using the return
     /// value of this method.
     fn is_simple(&self) -> bool;
-    
+
     /// Do not override. This is the composable version of `intermediate_results()`, which uses
     /// `is_simple()` to determine whether to wrap the text in parentheses.
     fn inner_intermediate_results(&self) -> String {
         if self.is_simple() { self.intermediate_results() }
         else { format!("({})", self.intermediate_results()) } }
-    
+
     /// Returns all the `DieRoll`s that make up this total `Roll`. 
     fn rolled_faces(&self) -> Vec<&DieRoll>;
-    
+
     /// Returns the final total of all the rolls combined.
     fn totals(&self) -> Values;
 }
