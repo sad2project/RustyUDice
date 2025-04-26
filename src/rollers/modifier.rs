@@ -2,8 +2,7 @@ use std::rc::Rc;
 use crate::{
     Value, Values,
     random::Rng, 
-    rollers::{SubRoll, SubRoller,DieRoll, Roll, Roller},
-    str_util::wrapped_text };
+    rollers::{SubRoll, SubRoller,DieRoll, Roll, Roller} };
 
 pub struct ModifierRoller {
     roller: Rc<dyn SubRoller>,
@@ -15,7 +14,7 @@ impl ModifierRoller {
 }
 impl Roller for ModifierRoller {    
     fn description(&self) -> String {
-        let inner_desc = wrapped_text(&self.roller.description(), self.roller.is_simple());
+        let inner_desc = &self.roller.inner_description();
         format!("{} + {}", inner_desc, self.modifier)
     }
 

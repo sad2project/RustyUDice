@@ -48,7 +48,6 @@ pub mod premade;
 pub mod units;
 pub mod rollers;
 pub mod random;
-mod str_util;
 mod u64_gen;
 
 

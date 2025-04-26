@@ -5,8 +5,7 @@ use std::{
 use crate::{
     {Unit, Values},
     rollers::{DieRoll, Roll, Roller, SubRoll, SubRoller},
-    random::Rng,
-    str_util::wrapped_text
+    random::Rng
 };
 use self::Strategy::*;
 
@@ -187,7 +186,7 @@ impl PoolRoll {
 
     fn build_intermediate_results_part(rolls: &Vec<Box<dyn SubRoll>>, separator: &str) -> String {
         rolls.iter()
-            .map(|roll| wrapped_text(&roll.intermediate_results(), roll.is_simple()))
+            .map(|roll| roll.inner_intermediate_results())
             .collect::<Vec<String>>()
             .join(separator) }
 }
