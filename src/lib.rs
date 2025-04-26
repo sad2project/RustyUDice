@@ -55,7 +55,6 @@ pub trait Unit: Debug + Display {
     /// If the relationship's outcome should be ignored (such as everything being 
     /// cancelled out, i.e. banes and boons totalling to zero), then return an
     /// empty String, and the display system should ignore it.
-    /// TODO: decide if we'd rather use Option<String>
     fn output_for(&self, total: i32) -> String;
 }
 
@@ -213,15 +212,3 @@ impl Display for Values {
         f.write_str(&text)
     }
 }
-
-// TODO: Make a bunch of premade dice:
-//     - d2, d3, d4, d6, d8, d10, d12, d20, d30, d50, d100
-//     - dice for my board game
-//     - dice for Fate
-//     - dice for Warhammer?
-//     - dice for Star Wars?
-// Make them at compile time? To do so, we'll need to add a lot of `const` keywords
-// feature-gate different games? Otherwise, simply provide a module (crate?) for each
-// group with factories
-// When generating all the basic dice, create the d100 faces list first, then use 
-// subslices for each of the smaller dice, since faces are Rc'd anyway.

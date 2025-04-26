@@ -1,12 +1,17 @@
-use std::rc::Rc;
+use std::{
+    rc::Rc,
+    time::Instant };
+use instant_hasher::hash;
 
 
 const A: u64 = 48_271;
 const M: u64 = 2_147_483_647;
 fn next(current: u64) -> u64 { A.wrapping_mul(current) % M }
 
+fn get_u64() -> u64 { hash(Instant::now()) }
 
-pub fn choose_from<T>(vec: &Vec<Rc<T>>, rng: &mut Rng) -> Rc<T> { 
+
+pub fn choose_from<T>(vec: &Vec<Rc<T>>, rng: &mut Rng) -> Rc<T> {
     vec[rng.next_index(vec.len())].clone() }
 
 pub fn default_rng() -> Rng { Rng::new() }
@@ -27,15 +32,15 @@ impl Rng {
         if seed == 0 { 
             return Self { seed: 1 } }
         Self { seed } }
-    
+
     pub fn new() -> Self {
         Self { seed: get_u64() }
     }
-    
+
     pub fn next(&mut self) -> u64 {
         self.seed = next(self.seed);
         self.seed }
-    
+
     pub fn next_index(&mut self, length: usize) -> usize {
         let base = (self.next() - 1) as usize;
         base % length }
@@ -81,13 +86,6 @@ mod instant_hasher {
                 None => { Some((val as u64) << 32) } }
         }
     }
-}
-
-use instant_hasher::hash;
-use std::time::Instant;
-
-fn get_u64() -> u64 {
-    hash(Instant::now())
 }
 
 

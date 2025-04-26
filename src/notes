@@ -1,3 +1,8 @@
 // TODO: Add an optional timeout feature to StatisticsRoller
 // TODO: Add a timer output to StatisticsRoll and also tie in the timeout
-// TODO: add + and - operators to Values
+// TODO: change the add_*() methods in Value and Values to fail instead of the 
+//    silliness I did earlier
+// TODO: Make sure all method invocations on inner objects are the inner_* kinds
+// TODO: TESTS
+// TODO: finish premades
+// TODO: 
