@@ -21,7 +21,7 @@ impl SubRoller for Die {
     
     fn is_die(&self) -> bool { true }
 
-    fn sub_roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn SubRoll> {
+    fn inner_roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn SubRoll> {
         DieRoll::new(self.clone(), self.roll_face_with(rng))
     }
 }
@@ -86,10 +86,10 @@ mod tests {
         let two: &Values = &die.faces.get(1).unwrap().values;
 
         assert_eq!(die_roller.clone()
-                       .sub_roll_with(always_1_rng()).totals(),
+                       .inner_roll_with(always_1_rng()).totals(),
                    one.clone());
         assert_eq!(die_roller
-                       .sub_roll_with(always_2_rng()).totals(),
+                       .inner_roll_with(always_2_rng()).totals(),
                    two.clone()); }
 
     #[test]
@@ -111,11 +111,11 @@ mod tests {
     #[test]
     fn d2_roll_is_simple() {
         let die = d2_test_die();
-        assert!(die.sub_roll_with(default_rng()).is_simple()) }
+        assert!(die.inner_roll_with(default_rng()).is_simple()) }
 
     #[test]
     fn d2_roll_rolled_faces() {
-        let die_roll = d2_test_die().sub_roll_with(always_1_rng());
+        let die_roll = d2_test_die().inner_roll_with(always_1_rng());
         let sut = die_roll.rolled_faces();
         assert_eq!(sut.len(), 1);
         assert_eq!(sut[0].intermediate_results(), "d2:[1]"); }

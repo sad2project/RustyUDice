@@ -188,6 +188,12 @@ impl <'a> IntoIterator for &'a mut Values {
     type IntoIter = std::slice::IterMut<'a, Value>;
     fn into_iter(self) -> <&'a mut Values as IntoIterator>::IntoIter { self.values.iter_mut() }
 }
+impl FromIterator<Values> for Values {
+    fn from_iter<T: IntoIterator<Item=Values>>(iter: T) -> Self {
+        iter.into_iter().fold(
+            Values::new(), 
+            |mut a, b| {a.add_all_values(b); a}) }
+}
 impl From<Value> for Values {
     fn from(value: Value) -> Self {
         Self { values: vec![value] } }

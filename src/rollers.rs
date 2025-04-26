@@ -23,23 +23,21 @@
 /// can describe the entirety of the roll ("this die rolled a 7, and this one rolled a 2,
 /// and 4 was added on after"; that kind of stuff, though more strictly defined than that),
 /// as well as calculating the end total(s).
-mod add;
 mod die;
+mod math;
 mod multi;
 mod modifier;
 mod pool;
 mod stats;
-mod subtract;
 mod builder;
 
 pub use self::{
-    add::*,
     die::*,
+    math::*,
     multi::*,
     modifier::*,
     pool::*,
     stats::*,
-    subtract::*,
     builder::* };
 
 use std::{
@@ -147,7 +145,7 @@ pub trait SubRoller: Roller {
     /// The same as `roll_with()`, but returns a `ComposableRoll` to avoid needing to
     /// upcast or downcast. When a wrapper `Roller` calls a roll method of an inner 
     /// `Roller`, it should be this one.
-    fn sub_roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn SubRoll>;
+    fn inner_roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn SubRoll>;
 }
   
 
@@ -222,7 +220,7 @@ pub trait SubRoll: Roll {
     
     /// Do not override. This is the composable version of `intermediate_results()`, which uses
     /// `is_simple()` to determine whether to wrap the text in parentheses.
-    fn composable_intermediate_results(&self) -> String {
+    fn inner_intermediate_results(&self) -> String {
         if self.is_simple() { self.intermediate_results() }
         else { format!("({})", self.intermediate_results()) } }
     
