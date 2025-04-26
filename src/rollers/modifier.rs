@@ -60,12 +60,14 @@ impl SubRoll for ModifierRoll {
 
 #[cfg(test)]
 mod tests {
+    use std::ops::Deref;
     use std::rc::Rc;
     use crate::dice::{Die, Face};
     use crate::units::{BasicUnit, DNumUnit};
     use crate::{Unit, Value};
+    use crate::rollers::SubRoller;
 
-    fn test_die() -> (Rc<dyn Unit>, Rc<dyn Unit>, Rc<Die>) {
+    fn make_test_die() -> (Rc<dyn Unit>, Rc<dyn Unit>, Rc<Die>) {
         let unit1 = BasicUnit::new("Successes".to_string(), "{} Successes".to_string(), false);
         let unit2 = DNumUnit::new();
         let die = Die::new("Mixer".to_string(), vec![
@@ -78,4 +80,12 @@ mod tests {
                 Value{ unit: unit1.clone(), value: 2}])
         ]);
         (unit1, unit2, die) }
+    
+    #[test]
+    fn test_die() {
+        let (unit1, unit2, die) = make_test_die();
+        // This is not the real test; it merely exists to get rid of warnings
+        assert!(unit1.deref() == unit2.deref());
+        assert!(die.is_die())
+    }
 }
