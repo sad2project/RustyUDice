@@ -4,16 +4,24 @@ use crate::{
     dice::{Die, Face},
     units::BasicUnit};
 
-pub fn build() -> Vec<Rc<Die>> { vec![Die::new("Hibernation".to_string(), faces())] }
 
-fn faces() -> Vec<Rc<Face>> {
-    let unit = BasicUnit::new("Successes".to_string(), "{} Successes".to_string(), false);
-    let face_plus = Face::new("+".to_string(), vec![Value{ unit: unit.clone(), value: 1}]);
-    let face_minus = Face::new("-".to_string(), vec![Value{ unit: unit.clone(), value: -1}]);
+pub fn build() -> (Rc<dyn Unit>, Rc<Die>) { 
+    let unit = unit();
+    let die = Die::new("Hibernation", faces(unit.clone()));
+    (unit, die) }
+
+
+fn unit() -> Rc<dyn Unit> {
+    BasicUnit::new("Successes", "{} Successes", false) }
+
+
+fn faces(unit: Rc<dyn Unit>) -> Vec<Rc<Face>> {
+    let face_plus = Face::with_one_value("+", unit.clone().with_value(1));
+    let face_minus = Face::with_one_value("-", unit.clone().with_value(-1));
     vec![
         face_plus.clone(),
         face_plus.clone(),
         face_plus,
         face_minus.clone(),
         face_minus,
-        Face::new(" ".to_string(), vec![Value{ unit: unit.clone(), value: 0}]) ] }
+        Face::blank(unit) }

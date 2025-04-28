@@ -56,6 +56,8 @@ pub trait Unit: Debug + Display {
     /// cancelled out, i.e. banes and boons totalling to zero), then return an
     /// empty String, and the display system should ignore it.
     fn output_for(&self, total: i32) -> String;
+    fn with_value(self: Rc<Self>, value: i32) -> Value {
+        Value{ unit: self, value } }
 }
 
 impl PartialEq for &dyn Unit {

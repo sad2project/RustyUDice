@@ -5,4 +5,9 @@
 // TODO: Make sure all method invocations on inner objects are the inner_* kinds
 // TODO: TESTS
 // TODO: finish premades
-// TODO: 
+// TODO: rename Value(s) to Measure(s)? Something similar?
+// TODO: exploding die roller. Make a Die wrapper called ExplodingDie, and this takes care
+//    of all the simple exploding cases. If a certain die should always be exploding, no 
+//    matter the ruleset it's used under, it should be exported as such.
+//    But there should also be a separate roller (TriggeredRoller) that can take a trigger
+//    predicate that triggers other rolls.
