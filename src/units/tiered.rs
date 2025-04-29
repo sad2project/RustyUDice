@@ -34,17 +34,17 @@ impl TieredUnit {
             id: new_id(),
             name: name.into(),
             tiers: vec![
-                Tier{ range: ..0, output_format: neg_fmt.into() },
-                Tier{ range: 0..1, output_format: zero_fmt.into() },
-                Tier{ range: 1.., output_format: pos_fmt.into() }] }) }
+                Tier{ range: i32::MIN..=-1, output_format: neg_fmt.into() },
+                Tier{ range: 0..=0, output_format: zero_fmt.into() },
+                Tier{ range: 1..=i32::MAX, output_format: pos_fmt.into() }] }) }
                 
     pub fn pos_neg(name: &str, pos_fmt: &str, neg_fmt: &str) -> Rc<Self> {
         Rc::new(Self {
             id: new_id(),
             name: name.into(),
             tiers: vec![
-               Tier{ range: ..0, output_format: neg_fmt.into() },
-               Tier{ range: 1.., output_format: pos_fmt.into() }] }) }
+               Tier{ range: i32::MIN..=-1, output_format: neg_fmt.into() },
+               Tier{ range: 1..=i32::MAX, output_format: pos_fmt.into() }] }) }
     
     pub fn rebuild(id: u64, name: String, tiers: impl Into<Vec<Tier>>) -> Rc<Self> { 
         Rc::new(Self { 

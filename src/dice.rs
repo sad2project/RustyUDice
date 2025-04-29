@@ -2,7 +2,7 @@ use std::{
     fmt::{Display, Error, Formatter},
     rc::Rc };
 use crate::{
-    {Value, Values},
+    {Unit, Value, Values},
     random::{choose_from, Rng, default_rng} };
 
 
@@ -15,8 +15,8 @@ pub struct Die {
     pub faces: Vec<Rc<Face>>,
 }
 impl  Die {
-    pub fn new(name: &str, faces: Vec<Rc<Face>>) -> Rc<Self> {
-        Rc::new(Self { name: name.into(), faces }) }
+    pub fn new(name: &str, faces: Vec<&Rc<Face>>) -> Rc<Self> {
+        Rc::new(Self { name: name.into(), faces: faces.into_iter().map(Rc::clone).collect() }) }
 
     /// "Roll" the `Die` and see which `Face` is up. Accepts a random number
     /// generator (`crate::random::Rng`) as well, allowing for customizable
@@ -52,10 +52,10 @@ impl Face {
     
     
     pub fn with_two_vals(label: &str, val1: Value, val2: Value) -> Rc<Self> {
-        Self::new(label, vec![val1, val2])
+        Self::new(label, vec![val1, val2]) }
     
-    pub fn blank(unit: Rc<dyn Unit>) -> Rc<Self> {
-        Face::with_one_val(" ", unit.with_value(0))
+    pub fn blank(unit: &Rc<dyn Unit>) -> Rc<Self> {
+        Face::with_one_val(" ", Value::new(unit, 0)) }
 }
 impl Display for Face {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {

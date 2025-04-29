@@ -48,6 +48,7 @@ pub mod premade;
 pub mod units;
 pub mod rollers;
 pub mod random;
+pub mod storage;
 
 
 pub trait Unit: Debug + Display {
@@ -56,8 +57,6 @@ pub trait Unit: Debug + Display {
     /// cancelled out, i.e. banes and boons totalling to zero), then return an
     /// empty String, and the display system should ignore it.
     fn output_for(&self, total: i32) -> String;
-    fn with_value(self: Rc<Self>, value: i32) -> Value {
-        Value{ unit: self, value } }
 }
 
 impl PartialEq for &dyn Unit {
@@ -74,6 +73,9 @@ pub struct Value {
     pub value: i32,
 }
 impl Value {
+    fn new(unit: &Rc<dyn Unit>, value: i32) -> Self {
+        Self{ unit: unit.clone(), value } }
+    
    fn add(&mut self, other: Value) -> bool {
       if self.has_same_unit(&other) {
          self.value += other.value;

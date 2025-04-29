@@ -67,17 +67,12 @@ mod tests {
     use crate::rollers::SubRoller;
 
     fn make_test_die() -> (Rc<dyn Unit>, Rc<dyn Unit>, Rc<Die>) {
-        let unit1 = BasicUnit::new("Successes".to_string(), "{} Successes".to_string(), false);
-        let unit2 = DNumUnit::new();
-        let die = Die::new("Mixer".to_string(), vec![
-            Face::new("both".to_string(), vec![
-                Value{ unit: unit1.clone(), value: 1},
-                Value{ unit: unit2.clone(), value: 1}]),
-            Face::new("basic".to_string(), vec![
-                Value{ unit: unit2.clone(), value: 2}]),
-            Face::new("successor".to_string(), vec![
-                Value{ unit: unit1.clone(), value: 2}])
-        ]);
+        let unit1: Rc<dyn Unit> = BasicUnit::new("Successes", "{} Successes", false);
+        let unit2: Rc<dyn Unit> = DNumUnit::new();
+        let die = Die::new("Mixer", vec![
+            &Face::with_two_vals("both", Value::new(&unit1, 1), Value::new(&unit2, 1)),
+            &Face::with_one_val("basic", Value::new(&unit2, 2)),
+            &Face::with_one_val("successor", Value::new(&unit1, 2))]);
         (unit1, unit2, die) }
     
     #[test]
