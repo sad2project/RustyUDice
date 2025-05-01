@@ -14,7 +14,12 @@ impl Roller for Die {
         self.name.clone() }
 
     fn roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn Roll> {
-        DieRoll::new(self.clone(), self.roll_face_with(rng) ) }
+        let mut face = self.roll_face_with(rng);
+        let mut output_roll: Box<dyn Roll> = DieRoll::new(self.clone(), face.clone());
+        while output_roll.should_explode() {
+            output_roll = output_roll.explode();
+        }
+        output_roll }
 }
 impl SubRoller for Die {
     fn is_simple(&self) -> bool { true }
@@ -22,8 +27,11 @@ impl SubRoller for Die {
     fn is_die(&self) -> bool { true }
 
     fn inner_roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn SubRoll> {
-        DieRoll::new(self.clone(), self.roll_face_with(rng))
-    }
+        let mut face = self.roll_face_with(rng);
+        let mut output_roll: Box<dyn SubRoll> = DieRoll::new(self.clone(), face.clone());
+        if output_roll.should_explode() {
+            output_roll = output_roll.explode(rng); }
+        output_roll }
 }
 
 
@@ -35,6 +43,16 @@ pub struct DieRoll {
 impl DieRoll {
     pub fn new(die: Rc<Die>, face: Rc<Face>) -> Box<Self> {
         Box::new(Self{ die, face }) }
+    
+    fn should_explode(&self) -> bool {
+        face.value_for(&die.explode_on).is_some() }
+    
+    fn explode(self, rng: Rng) -> Box<ExplodedRoll> {
+        let num_explosions = self.face.value_for(&self.die.explode_on).unwrap();
+        let mut output_roll = ExplodedRoll::new(self.clone(), num_explosions);
+        for _ in 0..num_explosions {
+            output_roll.push(self.die.inner_roll_with(rng)); }
+        output_roll }
 }
 impl Roll for DieRoll {
     fn intermediate_results(&self) -> String { self.to_string() }
@@ -54,6 +72,57 @@ impl Display for DieRoll {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         f.write_fmt(format_args!("{}:[{}]", self.die, self.face)) }
 }
+
+
+#[derive(Clone)]
+pub struct ExplodedRoll {
+    pub original: Box<dyn SubRoll>,
+    pub rolls: Vec<Box<dyn SubRoll>>
+}
+impl ExplodedRoll {
+    fn new(trigger_roll: Box<dyn SubRoll>, num_explosions: usize) -> Box<Self> {
+        Box::new(Self{ original: trigger_roll, rolls: Vec::with_capacity(num_explosions) }) }
+    
+    fn push(&mut self, roll: Rc<dyn SubRoll>) {
+        self.rolls.push(roll); }
+}
+impl Roll for ExplodedRoll {
+    fn intermediate_results(&self) -> String {
+        if self.rolls.len() == 1 {
+            format!(
+                "{} => (exploded: {})", 
+                self.original.inner_intermediate_results(), 
+                self.rolls[0].inner_intermediate_results()) }
+        else {
+            let exploded_rolls = self.rolls.iter()
+                .map(SubRoll::inner_intermediate_results)
+                .collect::<Vec<String>>()
+                .join(", ");
+            format!(
+                "{} => (exploded {} times: {})",
+                self.original, 
+                self.rolls.len(),
+                exploded_rolls) } }
+    
+    fn final_result(&self) -> String {
+        self.totals.to_string() }
+}
+impl SubRoll for ExplodedRoll {
+    fn is_simple(&self) -> bool { false }
+    
+    fn rolled_faces(&self) -> Vec<&DieRoll> {
+        let mut faces = self.original.rolled_faces().into_iter();
+        for roll in self.rolls.iter() {
+            faces.chain(roll.rolled_faces()) }
+        faces.collect() }
+    
+    fn totals(&self) -> Values {
+        let mut values = self.original.totals();
+        for roll in self.rolls.iter() {
+            values.add_all_values(roll.totals()); }
+        Values }
+}
+
 
 #[cfg(test)]
 mod tests {

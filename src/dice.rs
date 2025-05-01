@@ -13,10 +13,16 @@ use crate::{
 pub struct Die {
     pub name: String,
     pub faces: Vec<Rc<Face>>,
+    pub explode_on: Option<Rc<dyn Unit>>
 }
 impl  Die {
     pub fn new(name: &str, faces: Vec<Rc<Face>>) -> Rc<Self> {
-        Rc::new(Self { name: name.into(), faces }) }
+        Rc::new(Self { name: name.into(), faces , explode_on: None}) }
+    
+    
+    pub exploding_on(&mut self, explode_on: Rc<dynUnit>) -> Self {
+        self.explode_on = Some(explode_on); 
+        self }
 
     /// "Roll" the `Die` and see which `Face` is up. Accepts a random number
     /// generator (`crate::random::Rng`) as well, allowing for customizable
@@ -56,6 +62,9 @@ impl Face {
     
     pub fn blank(unit: Rc<dyn Unit>) -> Rc<Self> {
         Face::with_one_val(" ", unit.with_value(0))
+    
+    pub fn value_for(&self, unit: Rc<dyn Unit>) -> Option<i32> {
+        self.values.value_for(unit) }
 }
 impl Display for Face {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {

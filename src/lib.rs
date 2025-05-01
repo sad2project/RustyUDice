@@ -74,24 +74,19 @@ pub struct Value {
     pub value: i32,
 }
 impl Value {
-   fn add(&mut self, other: Value) -> bool {
-      if self.has_same_unit(&other) {
-         self.value += other.value;
-         true }
-      else { 
-          false } }
+    fn add(&mut self, other: i32) {
+        self.value += other; }
    
-   fn subtract(&mut self, other: Value) -> bool {
-       if self.has_same_unit(&other) {
-           self.value -= other.value;
-           true }
-       else {
-           false } } 
+    fn subtract(&mut self, other: i32) {
+        self.value -= other; } 
     
-   pub fn has_same_unit(&self, other: &Value) -> bool {
-      self.unit.deref() == other.unit.deref() }
-
-   pub fn output(&self) -> String { self.unit.output_for(self.value) }
+    pub fn has_same_unit(&self, other: &Value) -> bool {
+        self.unit.deref() == other.unit.deref() }
+    
+    pub fn is_for_unit(&self, unit: Rc<dyn Unit>) -> bool {
+        self.unit.deref() == unit.deref() }
+    
+    pub fn output(&self) -> String { self.unit.output_for(self.value) }
 }
 impl Display for Value {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -141,9 +136,9 @@ impl Values {
     
     pub fn add_value(&mut self, value: Value) {
         for val in self.values.iter_mut() { 
-            // Value::add() returns whether it worked, which requires the same Relationship 
-            // Therefore, if it did, we're done
-            if val.add(value.clone()) { return; } }
+            if val.has_same_unit(&value) { 
+                val.add(value.value);
+                return; } }
         // If we haven't returned yet, that means that there aren't any Values with the same
         // Relationship in the collection yet, so we need to actually insert it
         self.values.push(value); }
@@ -154,18 +149,20 @@ impl Values {
     
     pub fn subtract_value(&mut self, value: Value) {
         for val in self.values.iter_mut() {
-            if val.subtract(value.clone()) { return; } }
+            if val.has_same_unit(&value) { 
+                val.subtract(value.value);
+                return; } }
         self.values.push(value); }
     
     pub fn subtract_all_values(&mut self, values: Values) {
         for value in values.into_iter() {
             self.subtract_value(value.clone()) } }
     
-    pub fn get(&self, unit: Rc<dyn Unit>) -> Option<i32> {
+    pub fn value_for(&self, unit: Rc<dyn Unit>) -> Option<i32> {
         for value in &self.values {
-            if value.unit.deref() == unit.deref() { 
+            if value.is_for_unit(&unit) {
                 return Some(value.value) } }
-        None } 
+        None }
 }
 impl Neg for Values {
     type Output = Self;
