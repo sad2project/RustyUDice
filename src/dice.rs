@@ -2,7 +2,7 @@ use std::{
     fmt::{Display, Error, Formatter},
     rc::Rc };
 use crate::{
-    {Value, Values},
+    {Unit, Value, Values},
     random::{choose_from, Rng, default_rng} };
 
 
@@ -16,6 +16,8 @@ pub struct Die {
     pub explode_on: Option<Rc<dyn Unit>>
 }
 impl  Die {
+    pub fn new(name: &str, faces: Vec<&Rc<Face>>) -> Rc<Self> {
+        Rc::new(Self { name: name.into(), faces: faces.into_iter().map(Rc::clone).collect() }) }
     pub fn new(name: &str, faces: Vec<Rc<Face>>) -> Rc<Self> {
         Rc::new(Self { name: name.into(), faces , explode_on: None}) }
     
@@ -58,8 +60,10 @@ impl Face {
     
     
     pub fn with_two_vals(label: &str, val1: Value, val2: Value) -> Rc<Self> {
-        Self::new(label, vec![val1, val2])
+        Self::new(label, vec![val1, val2]) }
     
+    pub fn blank(unit: &Rc<dyn Unit>) -> Rc<Self> {
+        Face::with_one_val(" ", Value::new(unit, 0)) }
     pub fn blank(unit: Rc<dyn Unit>) -> Rc<Self> {
         Face::with_one_val(" ", unit.with_value(0))
     

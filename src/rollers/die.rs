@@ -139,9 +139,9 @@ mod tests {
 
     fn d2_test_die() -> Rc<Die> {
         let rel = DNumUnit::new();
-        let face1 = Face::new("1".to_string(), vec![Value{ unit: rel.clone(), value: 1}]);
-        let face2 = Face::new("2".to_string(), vec![Value{ unit: rel.clone(), value: 2}]);
-        Die::new("d2".to_string(), vec![face1, face2]) }
+        let face1 = Face::new("1", vec![Value{ unit: rel.clone(), value: 1}]);
+        let face2 = Face::new("2", vec![Value{ unit: rel.clone(), value: 2}]);
+        Die::new("d2", vec![&face1, &face2]) }
 
     fn always_2_rng() -> Rng { Rng::from_seed(2) }
 
