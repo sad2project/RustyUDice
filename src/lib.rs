@@ -76,12 +76,6 @@ impl Value {
     fn new(unit: &Rc<dyn Unit>, value: i32) -> Self {
         Self{ unit: unit.clone(), value } }
     
-   fn add(&mut self, other: Value) -> bool {
-      if self.has_same_unit(&other) {
-         self.value += other.value;
-         true }
-      else { 
-          false } }
     fn add(&mut self, other: i32) {
         self.value += other; }
    

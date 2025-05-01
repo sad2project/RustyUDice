@@ -17,9 +17,10 @@ pub struct Die {
 }
 impl  Die {
     pub fn new(name: &str, faces: Vec<&Rc<Face>>) -> Rc<Self> {
-        Rc::new(Self { name: name.into(), faces: faces.into_iter().map(Rc::clone).collect() }) }
-    pub fn new(name: &str, faces: Vec<Rc<Face>>) -> Rc<Self> {
-        Rc::new(Self { name: name.into(), faces , explode_on: None}) }
+        Rc::new(Self { 
+            name: name.into(), 
+            faces: faces.into_iter().map(Rc::clone).collect() , 
+            explode_on: None}) }
     
     
     pub exploding_on(&mut self, explode_on: Rc<dynUnit>) -> Self {
@@ -58,14 +59,11 @@ impl Face {
     pub fn with_one_val(label: &str, value: Value) -> Rc<Self> {
         Self::new(label, vec![value]) }
     
-    
     pub fn with_two_vals(label: &str, val1: Value, val2: Value) -> Rc<Self> {
         Self::new(label, vec![val1, val2]) }
     
     pub fn blank(unit: &Rc<dyn Unit>) -> Rc<Self> {
-        Face::with_one_val(" ", Value::new(unit, 0)) }
-    pub fn blank(unit: Rc<dyn Unit>) -> Rc<Self> {
-        Face::with_one_val(" ", unit.with_value(0))
+        Self::with_one_val(" ", Value::new(unit, 0)) }
     
     pub fn value_for(&self, unit: Rc<dyn Unit>) -> Option<i32> {
         self.values.value_for(unit) }
