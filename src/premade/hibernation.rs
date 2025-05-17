@@ -18,7 +18,7 @@ use crate::{
 
 pub fn build() -> (Rc<dyn Unit>, Rc<Die>) { 
     let unit = unit();
-    let die = Die::new("Hibernation", faces(&unit).iter().collect());
+    let die = Die::new("Hibernation", faces(&unit);
     (unit, die) }
 
 
@@ -26,13 +26,13 @@ fn unit() -> Rc<dyn Unit> {
     BasicUnit::new("Successes", "{} Successes", false) }
 
 
-fn faces(unit: &Rc<dyn Unit>) -> Vec<Rc<Face>> {
-    let face_plus = Face::with_one_val("+", Value::new(unit, 1));
-    let face_minus = Face::with_one_val("-", Value::new(unit, -1));
+fn faces(unit: &Rc<dyn Unit>) -> Vec<&Rc<Face>> {
+    let face_plus = &Face::with_one_val("+", Value::new(unit, 1));
+    let face_minus = &Face::with_one_val("-", Value::new(unit, -1));
     vec![
-        face_plus.clone(),
-        face_plus.clone(),
         face_plus,
-        face_minus.clone(),
+        face_plus,
+        face_plus,
         face_minus,
-        Face::blank(unit)] }
+        face_minus,
+        &Face::blank(unit)] }

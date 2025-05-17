@@ -1,5 +1,8 @@
 use std::rc::Rc;
-use crate::{Unit, dice::{Die, Face}, units::{BasicUnit, TieredUnit}, Value};
+use crate::{
+    Unit, Value,
+    dice::{Die, Face}, 
+    units::{BasicUnit, TieredUnit} };
 
 type RUnit = Rc<dyn Unit>;
 type RFace = Rc<Face>;
@@ -32,7 +35,7 @@ fn units() -> (RUnit, RUnit, RUnit, RUnit, RUnit, RUnit, RUnit) {
     BasicUnit::new("Reroll", "Reroll {} Expertise Dice", true) ) }
 
 
-fn common_faces(success_unit: &RUnit, boon_unit: &RUnit) -> (Rc<Face>, Rc<Face>, Rc<Face>, Rc<Face>, Rc<Face>, Rc<Face>) {
+fn common_faces(success_unit: &RUnit, boon_unit: &RUnit) -> (RFace, RFace, RFace, RFace, RFace, RFace) {
     ( Face::with_one_val("Challenge", Value::new(success_unit, -1)),
     Face::with_one_val("Success", Value::new(success_unit, 1)),
     Face::with_two_vals("Success + Boon", Value::new(success_unit, 1), Value::new(boon_unit, 1)),
@@ -117,15 +120,3 @@ fn reckless_die(succ_boon: &RFace, bane: &RFace, blank: &RFace, succ_unit: &RUni
         succ_exert,
         blank,
         blank]) }
-
-#[cfg(test)]
-mod tests {
-    use super::build;
-
-    #[test]
-    fn buildt() {
-        let x = build();
-        let z = 2;
-        assert!(false)
-    }
-}

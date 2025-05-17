@@ -1,5 +1,8 @@
 use std::rc::Rc;
-use crate::{Value, dice::{Die, Face}, units::DNumUnit, Unit};
+use crate::{
+    Unit, Value, 
+    dice::{Die, Face}, 
+    units::DNumUnit };
 
 pub fn build() -> (Rc<dyn Unit>, Vec<Rc<Die>>) {
     let unit: Rc<dyn Unit> = DNumUnit::new();
