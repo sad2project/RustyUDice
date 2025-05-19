@@ -42,7 +42,7 @@ impl Roller for StatsRoller {
     fn roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn Roll> {
         StatisticsRoll::new(
             (0..self.runs)
-            .map(|_| self.roller.clone().inner_roll_with(rng))
+            .map(|_| self.roller.clone().inner_roll_with(rng.clone()))
             .collect()) }
 }
 

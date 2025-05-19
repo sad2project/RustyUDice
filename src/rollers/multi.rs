@@ -53,7 +53,7 @@ impl Roller for MultiRoller {
     
     fn roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn Roll> {
         self.inner.iter().enumerate()
-          .map(|(idx, roller)| roller.roll_with(idx, rng))
+          .map(|(idx, roller)| roller.roll_with(idx, rng.clone()))
           .collect::<MultiRoll>()
           .boxed() }
 }

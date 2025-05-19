@@ -58,13 +58,13 @@ impl Roller for MathRoller {
             .join("") }
     
     fn roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn Roll> {
-        MathRoll::new(self.inner.iter().map(|roller| roller.roll_with(rng))) }
+        MathRoll::new(self.inner.iter().map(|roller| roller.roll_with(rng.clone()))) }
 }
 impl SubRoller for MathRoller {
     fn is_simple(&self) -> bool { false }
 
     fn inner_roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn SubRoll> {
-        MathRoll::new(self.inner.iter().map(|roller| roller.roll_with(rng))) }
+        MathRoll::new(self.inner.iter().map(|roller| roller.roll_with(rng.clone()))) }
 }
 
 enum MathRollType {

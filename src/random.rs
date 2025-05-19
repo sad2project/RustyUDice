@@ -1,5 +1,7 @@
 use std::{
+    ops::Deref,
     rc::Rc,
+    sync::Mutex,
     time::Instant };
 use instant_hasher::hash;
 
@@ -23,23 +25,28 @@ pub fn test_rng() -> Rng { Rng::from_seed(1) }
 pub fn new_id() -> u64 { get_u64() }
 
 
-#[derive(Copy, Clone)]
+fn wrap_seed(seed: u64) -> Rc<Mutex<u64>> {
+    Rc::new(Mutex::new(seed)) }
+
+
+#[derive(Clone)]
 pub struct Rng {
-    seed: u64
+    seed: Rc<Mutex<u64>>
 }
 impl Rng {
     pub fn from_seed(seed: u64) -> Self {
         if seed == 0 { 
-            return Self { seed: 1 } }
-        Self { seed } }
+            return Self { seed: wrap_seed(1) } }
+        Self { seed: wrap_seed(seed) } }
 
     pub fn new() -> Self {
-        Self { seed: get_u64() }
-    }
+        Self { seed: wrap_seed(get_u64()) } }
 
     pub fn next(&mut self) -> u64 {
-        self.seed = next(self.seed);
-        self.seed }
+        let mut seed = self.seed.lock().unwrap();
+        let next = next(*seed.deref());
+        *seed = next;
+        next }
 
     pub fn next_index(&mut self, length: usize) -> usize {
         let base = (self.next() - 1) as usize;

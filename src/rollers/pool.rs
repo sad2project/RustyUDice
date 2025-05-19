@@ -124,7 +124,7 @@ impl Roller for PoolRoller {
     fn roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn Roll> {
         let mut rolls: Vec<Box<dyn SubRoll>> = Vec::with_capacity(self.count as usize);
         for _ in 0..self.count {
-            rolls.push(self.die.clone().inner_roll_with(rng));
+            rolls.push(self.die.clone().inner_roll_with(rng.clone()));
         }
         match self.strategy {
             KeepAll => {
@@ -152,7 +152,7 @@ impl SubRoller for PoolRoller {
     fn inner_roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn SubRoll> {
         let mut rolls: Vec<Box<dyn SubRoll>> = Vec::with_capacity(self.count as usize);
         for _ in 0..self.count {
-            rolls.push(self.die.clone().inner_roll_with(rng));
+            rolls.push(self.die.clone().inner_roll_with(rng.clone()));
         }
         match self.strategy {
             KeepAll => {

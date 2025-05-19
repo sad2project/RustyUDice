@@ -14,11 +14,11 @@ impl Roller for Die {
         self.name.clone() }
 
     fn roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn Roll> {
-        let mut face = self.roll_face_with(rng);
-        let mut output_roll: Box<dyn Roll> = DieRoll::new(self.clone(), face.clone());
-        while output_roll.should_explode() {
-            output_roll = output_roll.explode();
-        }
+        let face = self.roll_face_with(rng.clone());
+        let initial_roll = DieRoll::new(self.clone(), face.clone());
+        let mut output_roll: Box<dyn Roll> = initial_roll.clone();
+        if initial_roll.should_explode() {
+            output_roll = initial_roll.explode(rng); }
         output_roll }
 }
 impl SubRoller for Die {
@@ -27,10 +27,11 @@ impl SubRoller for Die {
     fn is_die(&self) -> bool { true }
 
     fn inner_roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn SubRoll> {
-        let mut face = self.roll_face_with(rng);
-        let mut output_roll: Box<dyn SubRoll> = DieRoll::new(self.clone(), face.clone());
-        if output_roll.should_explode() {
-            output_roll = output_roll.explode(rng); }
+        let face = self.roll_face_with(rng.clone());
+        let initial_roll = DieRoll::new(self.clone(), face.clone());
+        let mut output_roll: Box<dyn SubRoll> = initial_roll.clone();
+        if initial_roll.should_explode() {
+            output_roll = initial_roll.explode(rng); }
         output_roll }
 }
 
@@ -51,7 +52,7 @@ impl DieRoll {
         let num_explosions = self.face.value_for(&self.die.explode_on).unwrap();
         let mut output_roll = ExplodedRoll::new(self.clone(), num_explosions);
         for _ in 0..num_explosions {
-            output_roll.push(self.die.inner_roll_with(rng)); }
+            output_roll.push(die.clone().inner_roll_with(rng.clone())); }
         output_roll }
 }
 impl Roll for DieRoll {
