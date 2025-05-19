@@ -8,17 +8,17 @@ pub fn build() -> (Rc<dyn Unit>, Vec<Rc<Die>>) {
     let unit: Rc<dyn Unit> = DNumUnit::new();
     let faces = faces(&unit);
     let dice = vec![
-        Die::new("d2", faces[0..2].iter().collect()),
-        Die::new("d3", faces[0..3].iter().collect()),
-        Die::new("d4", faces[0..4].iter().collect()),
-        Die::new("d6", faces[0..6].iter().collect()),
-        Die::new("d8", faces[0..8].iter().collect()),
-        Die::new("d10", faces[0..10].iter().collect()),
-        Die::new("d12", faces[0..12].iter().collect()),
-        Die::new("d20", faces[0..20].iter().collect()),
-        Die::new("d30", faces[0..30].iter().collect()),
-        Die::new("d50", faces[0..50].iter().collect()),
-        Die::new("d100", faces[0..100].iter().collect())];
+        Die::new("d2", faces[0..2].to_vec()),
+        Die::new("d3", faces[0..3].to_vec()),
+        Die::new("d4", faces[0..4].to_vec()),
+        Die::new("d6", faces[0..6].to_vec()),
+        Die::new("d8", faces[0..8].to_vec()),
+        Die::new("d10", faces[0..10].to_vec()),
+        Die::new("d12", faces[0..12].to_vec()),
+        Die::new("d20", faces[0..20].to_vec()),
+        Die::new("d30", faces[0..30].to_vec()),
+        Die::new("d50", faces[0..50].to_vec()),
+        Die::new("d100", faces[0..100].to_vec())];
     (unit, dice) }
 
 fn faces(unit: &Rc<dyn Unit>) -> Vec<Rc<Face>> {

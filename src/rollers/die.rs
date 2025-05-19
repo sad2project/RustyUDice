@@ -9,6 +9,7 @@ use crate::{
     rollers::{Roll, Roller} };
 use crate::rollers::{SubRoll, SubRoller};
 
+
 impl Roller for Die {
     fn description(&self) -> String {
         self.name.clone() }
@@ -44,7 +45,7 @@ pub struct DieRoll {
 impl DieRoll {
     pub fn new(die: Rc<Die>, face: Rc<Face>) -> Box<Self> {
         Box::new(Self{ die, face }) }
-    
+
     fn should_explode(&self) -> bool {
         face.value_for(&die.explode_on).is_some() }
     
@@ -142,7 +143,7 @@ mod tests {
         let rel = DNumUnit::new();
         let face1 = Face::new("1", vec![Value{ unit: rel.clone(), value: 1}]);
         let face2 = Face::new("2", vec![Value{ unit: rel.clone(), value: 2}]);
-        Die::new("d2", vec![&face1, &face2]) }
+        Die::new("d2", vec![face1, face2]) }
 
     fn always_2_rng() -> Rng { Rng::from_seed(2) }
 

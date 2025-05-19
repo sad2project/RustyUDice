@@ -50,6 +50,13 @@ pub mod rollers;
 pub mod random;
 pub mod storage;
 
+#[macro_export]
+macro_rules! clone_vec {
+    ($item:expr) => { 
+        vec![$item.clone()] };
+    ($($items:expr),+) => {
+        vec![$($items.clone()),+] }; }
+
 
 pub trait Unit: Debug + Display {
     fn id(&self) -> u64;
@@ -85,7 +92,7 @@ impl Value {
     pub fn has_same_unit(&self, other: &Value) -> bool {
         self.unit.deref() == other.unit.deref() }
     
-    pub fn is_for_unit(&self, unit: Rc<dyn Unit>) -> bool {
+    pub fn is_for_unit(&self, unit: &Rc<dyn Unit>) -> bool {
         self.unit.deref() == unit.deref() }
     
     pub fn output(&self) -> String { self.unit.output_for(self.value) }
@@ -160,7 +167,7 @@ impl Values {
         for value in values.into_iter() {
             self.subtract_value(value.clone()) } }
     
-    pub fn value_for(&self, unit: Rc<dyn Unit>) -> Option<i32> {
+    pub fn value_for(&self, unit: &Rc<dyn Unit>) -> Option<i32> {
         for value in &self.values {
             if value.is_for_unit(&unit) {
                 return Some(value.value) } }

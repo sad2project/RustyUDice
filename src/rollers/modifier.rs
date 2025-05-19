@@ -70,9 +70,9 @@ mod tests {
         let unit1: Rc<dyn Unit> = BasicUnit::new("Successes", "{} Successes", false);
         let unit2: Rc<dyn Unit> = DNumUnit::new();
         let die = Die::new("Mixer", vec![
-            &Face::with_two_vals("both", Value::new(&unit1, 1), Value::new(&unit2, 1)),
-            &Face::with_one_val("basic", Value::new(&unit2, 2)),
-            &Face::with_one_val("successor", Value::new(&unit1, 2))]);
+            Face::with_two_vals("both", Value::new(&unit1, 1), Value::new(&unit2, 1)),
+            Face::with_one_val("basic", Value::new(&unit2, 2)),
+            Face::with_one_val("successor", Value::new(&unit1, 2))]);
         (unit1, unit2, die) }
     
     #[test]

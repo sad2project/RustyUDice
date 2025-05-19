@@ -1,8 +1,8 @@
 use std::rc::Rc;
 use crate::{
-    Unit, Value,
+    Unit, Value, clone_vec,
     dice::{Die, Face}, 
-    units::BasicUnit, 
+    units::BasicUnit,
     storage::{DieStorage, SetId} };
 
 // pub fn get(storage: impl DieStorage) -> (Rc<dyn Unit>, Rc<Die>) {
@@ -18,7 +18,7 @@ use crate::{
 
 pub fn build() -> (Rc<dyn Unit>, Rc<Die>) { 
     let unit = unit();
-    let die = Die::new("Hibernation", faces(&unit);
+    let die = Die::new("Hibernation", faces(&unit));
     (unit, die) }
 
 
@@ -26,13 +26,13 @@ fn unit() -> Rc<dyn Unit> {
     BasicUnit::new("Successes", "{} Successes", false) }
 
 
-fn faces(unit: &Rc<dyn Unit>) -> Vec<&Rc<Face>> {
-    let face_plus = &Face::with_one_val("+", Value::new(unit, 1));
-    let face_minus = &Face::with_one_val("-", Value::new(unit, -1));
-    vec![
+fn faces(unit: &Rc<dyn Unit>) -> Vec<Rc<Face>> {
+    let face_plus = Face::with_one_val("+", Value::new(unit, 1));
+    let face_minus = Face::with_one_val("-", Value::new(unit, -1));
+    clone_vec![
         face_plus,
         face_plus,
         face_plus,
         face_minus,
         face_minus,
-        &Face::blank(unit)] }
+        Face::blank(unit)] }

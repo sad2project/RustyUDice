@@ -1,8 +1,5 @@
 use std::rc::Rc;
-use crate::{
-    Unit, Value,
-    dice::{Die, Face}, 
-    units::{BasicUnit, TieredUnit} };
+use crate::{Unit, Value, dice::{Die, Face}, units::{BasicUnit, TieredUnit}, clone_vec};
 
 type RUnit = Rc<dyn Unit>;
 type RFace = Rc<Face>;
@@ -15,13 +12,13 @@ pub fn build() -> (Vec<RUnit>, Vec<RDie>) {
     let (succ_face, succx2_face, fail_face, failx2_face, adv_face, advx2_face, threat_face, threatx2_face, succ_adv_face, fail_threat_face, blank_face) = common_faces(&succ_unit, &adv_unit);
     let dice: Vec<RDie> = vec![
         ability_die(&succ_face, &succx2_face, &adv_face, &advx2_face, &succ_adv_face, &blank_face),
-        proficiency_die(&succ_face, &succx2_face, &adv_face, &advx2_face, &succ_adv_face, &blank_face),
-        boost_die(&succ_face, &succx2_face, &adv_face, &advx2_face, &succ_adv_face, &blank_face),
+        proficiency_die(&succ_face, &succx2_face, &adv_face, &advx2_face, &succ_adv_face, &blank_face, &triumph_unit),
+        boost_die(&succ_face, &adv_face, &advx2_face, &succ_adv_face, &blank_face),
         difficulty_die(&fail_face, &failx2_face, &threat_face, &threatx2_face, &fail_threat_face, &blank_face),
-        challenge_die(&fail_face, &failx2_face, &threat_face, &threatx2_face, &fail_threat_face, &blank_face),
-        setback_die(&fail_face, &failx2_face, &threat_face, &threatx2_face, &fail_threat_face, &blank_face),
+        challenge_die(&fail_face, &failx2_face, &threat_face, &threatx2_face, &fail_threat_face, &blank_face, &triumph_unit),
+        setback_die(&fail_face, &threat_face, &blank_face),
         force_die(&force_unit) ];
-    let arr_units: [RUnit; 7] = units.into();
+    let arr_units: [RUnit; 4] = units.into();
     (Vec::from(&arr_units), dice) }
 
 
@@ -46,8 +43,46 @@ fn common_faces(success_unit: &RUnit, adv_unit: &RUnit) -> (RFace, RFace, RFace,
     Face::blank(success_unit)) }
 
 
+fn ability_die(succ_face: &RFace, succx2_face: &RFace, adv_face: &RFace, advx2_face: &RFace, succ_adv_face: &RFace, blank_face: &RFace) -> RDie {
+    Die::new("Ability", clone_vec![
+        succ_face,
+        succ_face,
+        succx2_face,
+        adv_face,
+        adv_face,
+        succ_adv_face,
+        advx2_face,
+        blank_face ]) }
+
+
+fn proficiency_die(succ_face: &RFace, succx2_face: &RFace, adv_face: &RFace, advx2_face: &RFace, succ_adv_face: &RFace, blank_face: &RFace, triumph_unit: &RUnit) -> RDie {
+    Die::new("Proficiency", clone_vec![
+        succ_face,
+        succ_face,
+        succx2_face,
+        succx2_face,
+        adv_face,
+        adv_face,
+        adv_face,
+        succ_adv_face,
+        succ_adv_face,
+        succ_adv_face,
+        Face::with_one_val("Triumph", Value::new(triumph_unit, 1)),
+        blank_face ]) }
+
+
+fn boost_die(succ_face: &RFace, adv_face: &RFace, advx2_face: &RFace, succ_adv_face: &RFace, blank_face: &RFace) -> RDie {
+    Die::new("Boost", clone_vec![
+        succ_face,
+        succ_adv_face,
+        adv_face,
+        advx2_face,
+        blank_face,
+        blank_face ]) }
+
+
 fn difficulty_die(fail_face: &RFace, failx2_face: &RFace, threat_face: &RFace, threatx2_face: &RFace, fail_threat_face: &RFace, blank_face: &RFace) -> RDie {
-    Die::new("Difficulty", vec![
+    Die::new("Difficulty", clone_vec![
         fail_face,
         failx2_face,
         threat_face,
@@ -55,5 +90,49 @@ fn difficulty_die(fail_face: &RFace, failx2_face: &RFace, threat_face: &RFace, t
         threat_face,
         threatx2_face,
         fail_threat_face,
-        blank_face])
+        blank_face]) }
+
+
+fn challenge_die(fail_face: &RFace, failx2_face: &RFace, threat_face: &RFace, threatx2_face: &RFace, fail_threat_face: &RFace, blank_face: &RFace, triumph_unit: &RUnit) -> RDie {
+    Die::new("Challenge", clone_vec![
+        fail_face,
+        failx2_face,
+        threat_face,
+        threat_face,
+        threat_face,
+        threatx2_face,
+        fail_threat_face,
+        blank_face ]) }
+
+
+fn setback_die(fail_face: &RFace, threat_face: &RFace, blank_face: &RFace) -> RDie {
+    Die::new("Setback", clone_vec![
+        fail_face,
+        fail_face,
+        threat_face,
+        threat_face,
+        blank_face,
+        blank_face
+    ])
 }
+
+
+fn force_die(force_unit: &RUnit) -> RDie {
+    let light = Face::with_one_val("Light", Value::new(force_unit, 1));
+    let lightx2 = Face::with_one_val("Light x2", Value::new(force_unit, 2));
+    let dark = Face::with_one_val("Dark", Value::new(force_unit, -1));
+    let darkx2 = Face::with_one_val("Dark x2", Value::new(force_unit, -2));
+    Die::new("Force", clone_vec![
+        light,
+        light,
+        light,
+        lightx2,
+        lightx2,
+        lightx2,
+        dark,
+        dark,
+        dark,
+        dark,
+        dark,
+        darkx2,
+        darkx2 ]) }

@@ -46,11 +46,11 @@ impl Strategy {
             | DropHighest {count: _, order_by: order} => {
                 let roll1_vals = roll1.totals();
                 let roll2_vals = roll2.totals();
-                for relationship in order {
+                for unit in order {
                     // Treat an absence of a Value for a Relationship as a 0 for it. 
                     // See function doc for more details
-                    let r1val = roll1_vals.get(relationship.clone()).unwrap_or(0);
-                    let r2val = roll2_vals.get(relationship.clone()).unwrap_or(0);
+                    let r1val = roll1_vals.value_for(&unit).unwrap_or(0);
+                    let r2val = roll2_vals.value_for(&unit).unwrap_or(0);
                     if r1val == r2val { continue; }
                     else { return Ord::cmp(&r1val, &r2val) }
                 }
