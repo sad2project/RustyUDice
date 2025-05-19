@@ -47,11 +47,16 @@ impl DieRoll {
         Box::new(Self{ die, face }) }
 
     fn should_explode(&self) -> bool {
-        face.value_for(&die.explode_on).is_some() }
-    
-    fn explode(self, rng: Rng) -> Box<ExplodedRoll> {
-        let num_explosions = self.face.value_for(&self.die.explode_on).unwrap();
-        let mut output_roll = ExplodedRoll::new(self.clone(), num_explosions);
+        if let Some(explode_on) = &self.die.explode_on {
+            self.face.value_for(explode_on).is_some() }
+        else {
+            false } }
+
+    fn explode(self: Box<DieRoll>, rng: Rng) -> Box<ExplodedRoll> {
+        let explode_on = self.die.explode_on.as_ref().unwrap();
+        let num_explosions = self.face.value_for(explode_on).unwrap();
+        let die = self.die.clone();
+        let mut output_roll = ExplodedRoll::new(self.clone(), num_explosions as usize);
         for _ in 0..num_explosions {
             output_roll.push(die.clone().inner_roll_with(rng.clone())); }
         output_roll }
@@ -76,53 +81,55 @@ impl Display for DieRoll {
 }
 
 
-#[derive(Clone)]
 pub struct ExplodedRoll {
-    pub original: Box<dyn SubRoll>,
-    pub rolls: Vec<Box<dyn SubRoll>>
+    pub triggering_roll: Box<dyn SubRoll>,
+    pub triggered_rolls: Vec<Box<dyn SubRoll>>
 }
 impl ExplodedRoll {
     fn new(trigger_roll: Box<dyn SubRoll>, num_explosions: usize) -> Box<Self> {
-        Box::new(Self{ original: trigger_roll, rolls: Vec::with_capacity(num_explosions) }) }
+        Box::new(Self{ triggering_roll: trigger_roll, triggered_rolls: Vec::with_capacity(num_explosions) }) }
     
-    fn push(&mut self, roll: Rc<dyn SubRoll>) {
-        self.rolls.push(roll); }
+    fn push(&mut self, roll: Box<dyn SubRoll>) {
+        self.triggered_rolls.push(roll); }
 }
 impl Roll for ExplodedRoll {
     fn intermediate_results(&self) -> String {
-        if self.rolls.len() == 1 {
+        if self.triggered_rolls.len() == 1 {
             format!(
-                "{} => (exploded: {})", 
-                self.original.inner_intermediate_results(), 
-                self.rolls[0].inner_intermediate_results()) }
+                "{} => (exploded: {})",
+                self.triggering_roll.inner_intermediate_results(),
+                self.triggered_rolls[0].inner_intermediate_results()) }
         else {
-            let exploded_rolls = self.rolls.iter()
-                .map(SubRoll::inner_intermediate_results)
+            let exploded_rolls = self.triggered_rolls.iter()
+                .map(|roll| roll.inner_intermediate_results())
                 .collect::<Vec<String>>()
                 .join(", ");
             format!(
                 "{} => (exploded {} times: {})",
-                self.original, 
-                self.rolls.len(),
+                self.triggering_roll.intermediate_results(),
+                self.triggered_rolls.len(),
                 exploded_rolls) } }
     
     fn final_result(&self) -> String {
-        self.totals.to_string() }
+        self.totals().to_string() }
 }
 impl SubRoll for ExplodedRoll {
     fn is_simple(&self) -> bool { false }
     
     fn rolled_faces(&self) -> Vec<&DieRoll> {
-        let mut faces = self.original.rolled_faces().into_iter();
-        for roll in self.rolls.iter() {
-            faces.chain(roll.rolled_faces()) }
-        faces.collect() }
+        // Gotta box it so that it can be dynamic, which allows the chaining later to be of the same type
+        let mut faces: Box<dyn Iterator<Item=&DieRoll>> = Box::new(self.triggering_roll.rolled_faces().into_iter()); 
+        for roll in self.triggered_rolls.iter() {
+            // build up one big iterator via chaining
+            faces = Box::new(faces.chain(roll.rolled_faces())) }
+        faces.collect()
+    }
     
     fn totals(&self) -> Values {
-        let mut values = self.original.totals();
-        for roll in self.rolls.iter() {
+        let mut values = self.triggering_roll.totals();
+        for roll in self.triggered_rolls.iter() {
             values.add_all_values(roll.totals()); }
-        Values }
+        values }
 }
 
 
