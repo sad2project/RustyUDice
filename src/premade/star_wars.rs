@@ -125,7 +125,6 @@ fn force_die(force_unit: &RUnit) -> RDie {
     Die::new("Force", clone_vec![
         light,
         light,
-        light,
         lightx2,
         lightx2,
         lightx2,
@@ -134,5 +133,5 @@ fn force_die(force_unit: &RUnit) -> RDie {
         dark,
         dark,
         dark,
-        darkx2,
+        dark,
         darkx2 ]) }
