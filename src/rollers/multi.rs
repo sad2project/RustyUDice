@@ -6,27 +6,21 @@ use crate::{
 
 #[derive(Clone)]
 pub struct NamedRoller {
-  name: Option<String>,
+  name: String,
   roller: Rc<dyn Roller>
 }
 impl NamedRoller {
     pub fn new(name: String, roller: Rc<dyn Roller>) -> Self {
-        Self { name: Some(name), roller } }
+        Self { name, roller } }
     
-    pub fn numbered(roller: Rc<dyn Roller>) -> Self {
-        Self { name: None, roller } }
+    pub fn numbered(idx: usize, roller: Rc<dyn Roller>) -> Self {
+        Self { name: (idx + 1).to_string(), roller } }
     
-    fn name(&self, index: usize) -> String {
-        if self.name.is_none() { 
-            index.to_string() }
-        else { 
-            self.name.clone().unwrap() } } 
+    fn description(&self) -> String {
+        format!("{}: {}", self.name, self.roller.description()) }
     
-    fn description(&self, index: usize) -> String {
-        format!("{}: {}", self.name(index), self.roller.description()) }
-    
-    fn roll_with(&self, index: usize, rng: Rng) -> NamedRoll {
-        NamedRoll { name: self.name(index), roll: self.roller.clone().roll_with(rng) } }
+    fn roll_with(&self, rng: Rng) -> NamedRoll {
+        NamedRoll { name: self.name.clone(), roll: self.roller.clone().roll_with(rng) } }
 }
 
 
@@ -40,20 +34,24 @@ impl MultiRoller {
         self.inner.push(roller);
         self }
     
+    pub fn add_with_name(&mut self, name: String, roller: Rc<dyn Roller>) -> &Self {
+        self.inner.push(NamedRoller::new(name, roller));
+        self }
+    
     pub fn add_numbered(&mut self, roller: Rc<dyn Roller>) -> &Self {
-        self.inner.push(NamedRoller::numbered(roller));
+        self.inner.push(NamedRoller::numbered(self.inner.len(), roller));
         self }
 }
 impl Roller for MultiRoller {
     fn description(&self) -> String {
-        self.inner.iter().enumerate()
-          .map(|(idx, roller)| roller.description(idx))
+        self.inner.iter()
+          .map(|roller| roller.description())
           .collect::<Vec<String>>()
           .join("\n") }
     
     fn roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn Roll> {
-        self.inner.iter().enumerate()
-          .map(|(idx, roller)| roller.roll_with(idx, rng.clone()))
+        self.inner.iter()
+          .map(|roller| roller.roll_with(rng.clone()))
           .collect::<MultiRoll>()
           .boxed() }
 }
