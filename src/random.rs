@@ -13,15 +13,26 @@ fn next(current: u64) -> u64 { A.wrapping_mul(current) % M }
 fn get_u64() -> u64 { hash(Instant::now()) }
 
 
+/// Chooses a random element from a `Vec` of `Rc<T>` and returns a clone of it. It COULD be more
+/// generalized, but it was only required for choosing a random face on a `Die`, so I didn't bother
+/// to generalize it any further.
 pub fn choose_from<T>(vec: &Vec<Rc<T>>, rng: &mut Rng) -> Rc<T> {
     vec[rng.next_index(vec.len())].clone() }
 
+
+/// Convenience function that creates a default `Rng` using the current time as a seed
 pub fn default_rng() -> Rng { Rng::new() }
 
+
+/// Convenience function that creates an `Rng` using the given seed.
 pub fn with_seed(seed: u64) -> Rng { Rng::from_seed(seed) }
 
+
+/// Convenience function that creates an `Rng` using a constant seed (1, as of now)
 pub fn test_rng() -> Rng { Rng::from_seed(1) }
 
+
+/// Convenience function that creates a new id for `Unit`s. Kind of a random UUID for them.
 pub fn new_id() -> u64 { get_u64() }
 
 
@@ -29,25 +40,31 @@ fn wrap_seed(seed: u64) -> Rc<Mutex<u64>> {
     Rc::new(Mutex::new(seed)) }
 
 
+/// Random Number Generator
 #[derive(Clone)]
 pub struct Rng {
     seed: Rc<Mutex<u64>>
 }
 impl Rng {
+    ///Creates an `Rng` from a given seed.
     pub fn from_seed(seed: u64) -> Self {
         if seed == 0 { 
             return Self { seed: wrap_seed(1) } }
         Self { seed: wrap_seed(seed) } }
 
+    /// Creates an `Rng` using a seed created from the current time
     pub fn new() -> Self {
         Self { seed: wrap_seed(get_u64()) } }
 
+    /// Generates the next random number
     pub fn next(&mut self) -> u64 {
         let mut seed = self.seed.lock().unwrap();
         let next = next(*seed.deref());
         *seed = next;
         next }
 
+    /// Generates the next number between 0 (inclusively) and the given number (exclusively), used
+    /// for coming up with an index for collection of a given length.
     pub fn next_index(&mut self, length: usize) -> usize {
         let base = (self.next() - 1) as usize;
         base % length }
@@ -57,7 +74,9 @@ impl Rng {
 mod instant_hasher {
     use std::time::Instant;
     use std::hash::{Hash, Hasher};
+    
 
+    /// Generates a hash value from an `Instant`
     pub fn hash(instant: Instant) -> u64 {
         let mut hasher = InstantToNum::new();
         instant.hash(&mut hasher);

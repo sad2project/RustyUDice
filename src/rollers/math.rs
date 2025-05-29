@@ -2,58 +2,68 @@ use std::{
     rc::Rc
 };
 
-use crate::{random::Rng, rollers::{Roller, Roll, SubRoller, SubRoll}, Values};
+use crate::{
+    Values,
+    random::Rng, 
+    rollers::{Roller, Roll, SubRoller, SubRoll, DieRoll} };
 
-enum MathRollerType {
+
+/// When it comes to having a long stream of numbers being added and subtracted together, especially
+/// when you want to represent that equation again later in text, you need to know whether you're
+/// displaying the first value, an addition, or a subtraction. If you don't distinguish between them,
+/// you end up with clunky representations that differ from the original intent. This type
+/// encapsulates the three main representations in order to display correctly.
+enum RollerMathType {
     First(Rc<dyn SubRoller>),
     Add(Rc<dyn SubRoller>),
     Subtract(Rc<dyn SubRoller>)
 }
-use MathRollerType as MatherT;
-impl MathRollerType {
+impl RollerMathType {
     fn description(&self) -> String {
         match self {
-            MatherT::First(roller) => roller.inner_description(),
-            MatherT::Add(roller) => format!(" + {}", roller.inner_description()),
-            MatherT::Subtract(roller) => format!(" - {}", roller.inner_description()) } }
+            RollerMathType::First(roller) => roller.inner_description(),
+            RollerMathType::Add(roller) => format!(" + {}", roller.inner_description()),
+            RollerMathType::Subtract(roller) => format!(" - {}", roller.inner_description()) } }
     
-    fn roll_with(&self, rng: Rng) -> MathRollType {
+    fn roll_with(&self, rng: Rng) -> RollMathType {
         match self {
-            MatherT::First(roller) => MathT::First(roller.clone().inner_roll_with(rng)),
-            MatherT::Add(roller) => MathT::Add(roller.clone().inner_roll_with(rng)),
-            MatherT::Subtract(roller) => MathT::Subtract(roller.clone().inner_roll_with(rng)) } }
+            RollerMathType::First(roller) => RollMathType::First(roller.clone().inner_roll_with(rng)),
+            RollerMathType::Add(roller) => RollMathType::Add(roller.clone().inner_roll_with(rng)),
+            RollerMathType::Subtract(roller) => RollMathType::Subtract(roller.clone().inner_roll_with(rng)) } }
 }
 
+
+/// A `Roller` that encapsulates a series of additions and subtractions of other `Roller`s.
 pub struct MathRoller {
-    inner: Vec<MathRollerType>
+    inner: Vec<RollerMathType>
 }
 impl MathRoller {
     pub fn add(lhs: Rc<dyn SubRoller>, rhs: Rc<dyn SubRoller>) -> Rc<Self> {
-        Rc::new(Self{ inner: vec![MatherT::First(lhs), MatherT::Add(rhs)] }) }
+        Rc::new(Self{ inner: vec![RollerMathType::First(lhs), RollerMathType::Add(rhs)] }) }
     
     pub fn subtract(lhs: Rc<dyn SubRoller>, rhs: Rc<dyn SubRoller>) -> Rc<Self> {
-        Rc::new(Self{ inner: vec![MatherT::First(lhs), MatherT::Subtract(rhs)] }) }
+        Rc::new(Self{ inner: vec![RollerMathType::First(lhs), RollerMathType::Subtract(rhs)] }) }
     
     pub fn plus(mut self, roller: Rc<dyn SubRoller>) -> Self {
-        self.inner.push(MatherT::Add(roller));
+        self.inner.push(RollerMathType::Add(roller));
         self }
     
     pub fn plus_all(mut self, rollers: impl IntoIterator<Item=Rc<dyn SubRoller>>) -> Self {
-        self.inner.extend(rollers.into_iter().map(MatherT::Add));
+        self.inner.extend(rollers.into_iter().map(RollerMathType::Add));
         self }
     
     pub fn minus(mut self, roller: Rc<dyn SubRoller>) -> Self {
-        self.inner.push(MatherT::Subtract(roller));
+        self.inner.push(RollerMathType::Subtract(roller));
         self }
     
     pub fn minus_all(mut self, rollers: impl IntoIterator<Item=Rc<dyn SubRoller>>) -> Self {
-        self.inner.extend(rollers.into_iter().map(MatherT::Subtract));
+        self.inner.extend(rollers.into_iter().map(RollerMathType::Subtract));
         self }
 }
 impl Roller for MathRoller {
     fn description(&self) -> String {
         self.inner.iter()
-            .map(MathRollerType::description)
+            .map(RollerMathType::description)
             .collect::<Vec<String>>()
             .join("") }
     
@@ -67,44 +77,44 @@ impl SubRoller for MathRoller {
         MathRoll::new(self.inner.iter().map(|roller| roller.roll_with(rng.clone()))) }
 }
 
-enum MathRollType {
+
+/// See `RollerMathType`'s documentation 
+enum RollMathType {
     First(Box<dyn SubRoll>),
     Add(Box<dyn SubRoll>),
     Subtract(Box<dyn SubRoll>)
 }
-use MathRollType as MathT;
-use crate::rollers::DieRoll;
-
-impl MathRollType {
+impl RollMathType {
     fn intermediate_results(&self) -> String {
         match self {
-            MathT::First(roll) => roll.inner_intermediate_results(),
-            MathT::Add(roll) => format!(" + {}", roll.inner_intermediate_results()),
-            MathT::Subtract(roll) => format!(" - {}", roll.inner_intermediate_results()) } }
+            RollMathType::First(roll) => roll.inner_intermediate_results(),
+            RollMathType::Add(roll) => format!(" + {}", roll.inner_intermediate_results()),
+            RollMathType::Subtract(roll) => format!(" - {}", roll.inner_intermediate_results()) } }
     
     fn rolled_faces(&self) -> Vec<&DieRoll> {
         match self {
-            MathT::First(roll) 
-            | MathT::Add(roll) 
-            | MathT::Subtract(roll) => roll.rolled_faces() } }
+            RollMathType::First(roll) 
+            | RollMathType::Add(roll) 
+            | RollMathType::Subtract(roll) => roll.rolled_faces() } }
     
     fn totals(&self) -> Values {
         match self {
-            MathT:: First(roll) | MathT::Add(roll) => roll.totals(),
-            MathT::Subtract(roll) => -roll.totals() } }
+            RollMathType:: First(roll) | RollMathType::Add(roll) => roll.totals(),
+            RollMathType::Subtract(roll) => -roll.totals() } }
 }
 
+
 struct MathRoll {
-    inner: Vec<MathRollType>
+    inner: Vec<RollMathType>
 }
 impl MathRoll {
-    pub fn new(inner: impl IntoIterator<Item=MathRollType>) -> Box<MathRoll> {
+    pub fn new(inner: impl IntoIterator<Item=RollMathType>) -> Box<MathRoll> {
         Box::new(MathRoll { inner: inner.into_iter().collect() }) }
 }
 impl Roll for MathRoll {
     fn intermediate_results(&self) -> String {
         self.inner.iter()
-            .map(MathRollType::intermediate_results)
+            .map(RollMathType::intermediate_results)
             .collect() }
 
     fn final_result(&self) -> String {
@@ -121,6 +131,6 @@ impl SubRoll for MathRoll {
 
     fn totals(&self) -> Values {
         self.inner.iter()
-            .map(MathRollType::totals)
+            .map(RollMathType::totals)
             .collect::<Values>() }
 }

@@ -3,7 +3,7 @@ use std::{
     ops::RangeInclusive,
     rc::Rc };
 use crate:: {
-    units::Unit,
+    Name, Unit,
     random::new_id };
 
 
@@ -19,20 +19,20 @@ use crate:: {
 #[derive(Debug)]
 pub struct TieredUnit {
     id: u64,
-    name: String,
+    name: Name,
     tiers: Vec<Tier>,
 }
 impl TieredUnit {
     pub fn new(name: &str, tiers: impl Into<Vec<Tier>>) -> Rc<Self> { 
         Rc::new(Self { 
             id: new_id(), 
-            name: name.into(),
+            name: name.try_into().unwrap(),  // TODO: Remove the unwrap(). Pass up the Result or ask for Name
             tiers: tiers.into() }) }
             
     pub fn pos_zero_neg(name: &str, pos_fmt: &str, zero_fmt: &str, neg_fmt: &str) -> Rc<Self> {
         Rc::new(Self {
             id: new_id(),
-            name: name.into(),
+            name: name.try_into().unwrap(),  // TODO: Remove the unwrap(). Pass up the Result or ask for Name
             tiers: vec![
                 Tier{ range: i32::MIN..=-1, output_format: neg_fmt.into() },
                 Tier{ range: 0..=0, output_format: zero_fmt.into() },
@@ -41,12 +41,12 @@ impl TieredUnit {
     pub fn pos_neg(name: &str, pos_fmt: &str, neg_fmt: &str) -> Rc<Self> {
         Rc::new(Self {
             id: new_id(),
-            name: name.into(),
+            name: name.try_into().unwrap(),  // TODO: Remove the unwrap(). Pass up the Result or ask for Name
             tiers: vec![
                Tier{ range: i32::MIN..=-1, output_format: neg_fmt.into() },
                Tier{ range: 1..=i32::MAX, output_format: pos_fmt.into() }] }) }
     
-    pub fn rebuild(id: u64, name: String, tiers: impl Into<Vec<Tier>>) -> Rc<Self> { 
+    pub fn rebuild(id: u64, name: Name, tiers: impl Into<Vec<Tier>>) -> Rc<Self> { 
         Rc::new(Self { 
             id,
             name,

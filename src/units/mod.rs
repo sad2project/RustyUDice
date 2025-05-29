@@ -2,13 +2,15 @@ use std::{
     fmt::{Debug, Display, Error, Formatter},
     rc::Rc };
 use crate::{
-    Unit,
+    Name, Unit,
     random::new_id };
 
 pub mod tiered;
 pub use tiered::{TieredUnit, Tier};
 
 
+/// The `Unit` intended for your typical numeric dice. It doesn't provide any kind of label with the
+/// total; it just outputs the numeric total itself. 
 pub struct DNumUnit;
 impl DNumUnit {
     pub fn new() -> Rc<Self> { Rc::new(DNumUnit) }
@@ -24,14 +26,19 @@ impl Display for DNumUnit {
 }
 impl Debug for DNumUnit {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        f.write_str("Default Numeric") }
+        f.write_str("Default Numeric Unit") }
 }
 
 
+/// A basic `Unit` type that only has one possible output format.
+///
+/// The format will replace a "{}" with the total or a "{|}" with the absolute value of the total.
+/// If you don't want there to be any output for the `Unit` if the total is zero, you can set
+/// `ignore_zero` to `true`.
 #[derive(Debug)]
 pub struct BasicUnit {
     id: u64,
-    name: String,
+    name: Name,
     output_format: String,
     ignore_zero: bool,
 }
@@ -39,11 +46,11 @@ impl BasicUnit {
     pub fn new(name: &str, output_format: &str, ignore_zero: bool) -> Rc<Self> { 
         Rc::new(Self { 
             id: new_id(), 
-            name: name.into(),
+            name: name.try_into().unwrap(),  // TODO: Remove the unwrap(). Pass up the Result or ask for Name
             output_format: output_format.into(), 
             ignore_zero}) }
     
-    pub fn rebuild(id: u64, name: String, output_format: String, ignore_zero: bool) -> Rc<Self> { 
+    pub fn rebuild(id: u64, name: Name, output_format: String, ignore_zero: bool) -> Rc<Self> { 
         Rc::new(Self { 
             id, 
             name,
@@ -61,5 +68,5 @@ impl Unit for BasicUnit {
 }
 impl Display for BasicUnit {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        f.write_fmt(format_args!("{}", self.name)) }
+        f.write_str(self.name) }
 }

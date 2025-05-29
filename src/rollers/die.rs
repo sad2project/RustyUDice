@@ -37,13 +37,15 @@ impl SubRoller for Die {
 }
 
 
+/// The result of rolling a `Die` (unless the `Die` ends up exploding)
 #[derive(Clone, Debug)]
 pub struct DieRoll {
     die: Rc<Die>,
     face: Rc<Face>
 }
 impl DieRoll {
-    pub fn new(die: Rc<Die>, face: Rc<Face>) -> Box<Self> {
+    // TODO: maybe make it pub(crate)?
+    fn new(die: Rc<Die>, face: Rc<Face>) -> Box<Self> {
         Box::new(Self{ die, face }) }
 
     fn should_explode(&self) -> bool {
@@ -81,9 +83,13 @@ impl Display for DieRoll {
 }
 
 
+/// The result of a `Die`'s roll if it explodes (gets a result that gets a "roll again and add that
+/// result on top"). Contains the triggering roll as well as all the additional rolls that may have
+/// been triggered directly (if any of those rolls trigger additional explosions, they become their
+/// own `ExplodedRoll`).
 pub struct ExplodedRoll {
-    pub triggering_roll: Box<dyn SubRoll>,
-    pub triggered_rolls: Vec<Box<dyn SubRoll>>
+    triggering_roll: Box<dyn SubRoll>,
+    triggered_rolls: Vec<Box<dyn SubRoll>>
 }
 impl ExplodedRoll {
     fn new(trigger_roll: Box<dyn SubRoll>, num_explosions: usize) -> Box<Self> {
