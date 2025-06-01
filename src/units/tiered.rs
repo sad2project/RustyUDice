@@ -23,25 +23,25 @@ pub struct TieredUnit {
     tiers: Vec<Tier>,
 }
 impl TieredUnit {
-    pub fn new(name: &str, tiers: impl Into<Vec<Tier>>) -> Rc<Self> { 
+    pub fn new(name: Name, tiers: impl Into<Vec<Tier>>) -> Rc<Self> {
         Rc::new(Self { 
             id: new_id(), 
-            name: name.try_into().unwrap(),  // TODO: Remove the unwrap(). Pass up the Result or ask for Name
+            name,
             tiers: tiers.into() }) }
             
-    pub fn pos_zero_neg(name: &str, pos_fmt: &str, zero_fmt: &str, neg_fmt: &str) -> Rc<Self> {
+    pub fn pos_zero_neg(name: Name, pos_fmt: &str, zero_fmt: &str, neg_fmt: &str) -> Rc<Self> {
         Rc::new(Self {
             id: new_id(),
-            name: name.try_into().unwrap(),  // TODO: Remove the unwrap(). Pass up the Result or ask for Name
+            name,
             tiers: vec![
                 Tier{ range: i32::MIN..=-1, output_format: neg_fmt.into() },
                 Tier{ range: 0..=0, output_format: zero_fmt.into() },
                 Tier{ range: 1..=i32::MAX, output_format: pos_fmt.into() }] }) }
                 
-    pub fn pos_neg(name: &str, pos_fmt: &str, neg_fmt: &str) -> Rc<Self> {
+    pub fn pos_neg(name: Name, pos_fmt: &str, neg_fmt: &str) -> Rc<Self> {
         Rc::new(Self {
             id: new_id(),
-            name: name.try_into().unwrap(),  // TODO: Remove the unwrap(). Pass up the Result or ask for Name
+            name,
             tiers: vec![
                Tier{ range: i32::MIN..=-1, output_format: neg_fmt.into() },
                Tier{ range: 1..=i32::MAX, output_format: pos_fmt.into() }] }) }

@@ -44,8 +44,7 @@ pub struct DieRoll {
     face: Rc<Face>
 }
 impl DieRoll {
-    // TODO: maybe make it pub(crate)?
-    fn new(die: Rc<Die>, face: Rc<Face>) -> Box<Self> {
+    pub(crate) fn new(die: Rc<Die>, face: Rc<Face>) -> Box<Self> {
         Box::new(Self{ die, face }) }
 
     fn should_explode(&self) -> bool {

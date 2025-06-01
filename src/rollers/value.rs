@@ -12,34 +12,34 @@ use crate::{
 ///
 /// The name is optional, but is recommended when `values` contains more than one `Value`. Without a
 /// name, textual representations default to how `Values` would display it.
-pub struct ValueRoller {  // TODO: rename to ModifierRoller?
+pub struct ModifierRoller {
     name: Option<Name>,
-    value: Values  // TODO: rename to values
+    values: Values
 }
-impl ValueRoller {
+impl ModifierRoller {
     /// Creates a named `ValueRoller` with the given `Name` and `Values`
     pub fn named(name: Name, value: Values) -> Rc<Self> {
-        Rc::new(ValueRoller { name: Some(name), value }) }
+        Rc::new(ModifierRoller { name: Some(name), values: value }) }
     
     /// Creates an unnamed `ValueRoller` with the given `Values`
     pub fn unnamed(value: Values) -> Rc<Self> {
-        Rc::new(ValueRoller { name: None, value }) }
+        Rc::new(ModifierRoller { name: None, values: value }) }
 }
-impl Roller for ValueRoller {
+impl Roller for ModifierRoller {
     /// Returns either the `String` version of the `name` (if `Some`), or the `to_string()` value of
     /// `values`
     fn description(&self) -> String {
-        self.name.clone().map_or(self.value.to_string(), |name| name.deref().to_owned()) }
+        self.name.clone().map_or(self.values.to_string(), |name| name.deref().to_owned()) }
 
     fn roll_with(self: Rc<Self>, _rng: Rng) -> Box<dyn Roll> {
-        ValueRoll::new(self.name.clone(), self.value.clone()) }
+        ValueRoll::new(self.name.clone(), self.values.clone()) }
 }
-impl SubRoller for ValueRoller {
+impl SubRoller for ModifierRoller {
     /// `true` if `name` is `Some(Name)`, else `false`
     fn is_simple(&self) -> bool { self.name.is_some() }
 
     fn inner_roll_with(self: Rc<Self>, _rng: Rng) -> Box<dyn SubRoll> {
-        ValueRoll::new(self.name.clone(), self.value.clone()) }
+        ValueRoll::new(self.name.clone(), self.values.clone()) }
 }
 
 

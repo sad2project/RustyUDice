@@ -1,5 +1,5 @@
 use std::rc::Rc;
-use crate::{Unit, Value, dice::{Die, Face}, units::{BasicUnit, TieredUnit}, clone_vec};
+use crate::{Unit, Value, dice::{Die, Face}, units::{BasicUnit, TieredUnit}, clone_vec, Name};
 
 type RUnit = Rc<dyn Unit>;
 type RFace = Rc<Face>;
@@ -22,11 +22,15 @@ pub fn build() -> (Vec<RUnit>, Vec<RDie>) {
     (Vec::from(&arr_units), dice) }
 
 
+fn name(name: &str) -> Name {
+    name.try_into().unwrap() }
+
+
 fn units() -> (RUnit, RUnit, RUnit, RUnit) {
-    ( TieredUnit::pos_zero_neg("Success", "{} Successes", "{} Successes", "{|} Failures"),
-    TieredUnit::pos_neg("Advantage", "{} Advantage", "{|} Threat"),
-    TieredUnit::pos_neg("Triumph", "{} Triumph", "{|} Despair"),
-    TieredUnit::pos_neg("Force", "{} Light Side", "{|} Dark Side") ) }
+    ( TieredUnit::pos_zero_neg(name("Success"), "{} Successes", "{} Successes", "{|} Failures"),
+    TieredUnit::pos_neg(name("Advantage"), "{} Advantage", "{|} Threat"),
+    TieredUnit::pos_neg(name("Triumph"), "{} Triumph", "{|} Despair"),
+    TieredUnit::pos_neg(name("Force"), "{} Light Side", "{|} Dark Side") ) }
 
 
 fn common_faces(success_unit: &RUnit, adv_unit: &RUnit) -> (RFace, RFace, RFace, RFace, RFace, RFace, RFace, RFace, RFace, RFace, RFace) {

@@ -1,5 +1,5 @@
 use std::rc::Rc;
-use crate::{Unit, Value, dice::{Die, Face}, units::{BasicUnit, TieredUnit}, clone_vec};
+use crate::{Unit, Value, dice::{Die, Face}, units::{BasicUnit, TieredUnit}, clone_vec, Name};
 
 type RUnit = Rc<dyn Unit>;
 type RFace = Rc<Face>;
@@ -22,14 +22,18 @@ pub fn build() -> (Vec<RUnit>, Vec<RDie>) {
     (Vec::from(&arr_units), dice) }
 
 
+fn name(name: &str) -> Name {
+    name.try_into().unwrap() }
+
+
 fn units() -> (RUnit, RUnit, RUnit, RUnit, RUnit, RUnit, RUnit) {
-    ( TieredUnit::pos_zero_neg("Successes", "{} Successes", "{} Successes", "{|} Challenges"),
-    TieredUnit::pos_neg("Boons", "{} Boons", "{|} Banes"),
-    BasicUnit::new("Delay", "{} Delay(s)", true),
-    BasicUnit::new("Exertion", "{} Exertion", true),
-    BasicUnit::new("Sigmar's Comet", "{} Sigmar's Comet(s)", true),
-    BasicUnit::new("Chaos Star", "{} Chaos Star(s)", true),
-    BasicUnit::new("Reroll", "Reroll {} Expertise Dice", true) ) }
+    ( TieredUnit::pos_zero_neg(name("Successes"), "{} Successes", "{} Successes", "{|} Challenges"),
+    TieredUnit::pos_neg(name("Boons"), "{} Boons", "{|} Banes"),
+    BasicUnit::new(name("Delay"), "{} Delay(s)", true),
+    BasicUnit::new(name("Exertion"), "{} Exertion", true),
+    BasicUnit::new(name("Sigmar's Comet"), "{} Sigmar's Comet(s)", true),
+    BasicUnit::new(name("Chaos Star"), "{} Chaos Star(s)", true),
+    BasicUnit::new(name("Reroll"), "Reroll {} Expertise Dice", true) ) }
 
 
 fn common_faces(success_unit: &RUnit, boon_unit: &RUnit) -> (RFace, RFace, RFace, RFace, RFace, RFace) {

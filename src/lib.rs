@@ -40,7 +40,7 @@ use std::{
     fmt::{Display, Debug, Formatter},
     ops::{Deref, Neg},
     rc::Rc };
-use crate::rollers::{SubRoller, ValueRoller};
+use crate::rollers::{SubRoller, ModifierRoller};
 
 pub mod dice;
 pub mod premade;
@@ -259,11 +259,11 @@ impl Values {
     
     /// Creates an unnamed ValueRoller from the `Values`
     pub fn to_roller(self) -> Rc<dyn SubRoller> {
-        ValueRoller::unnamed(self) }
+        ModifierRoller::unnamed(self) }
     
     /// Creates a named `ValueRoller` from the `Values`
     pub fn to_roller_with_name(self, name: Name) -> Rc<dyn SubRoller> {
-        ValueRoller::named(name, self) }
+        ModifierRoller::named(name, self) }
 }
 impl Neg for Values {
     type Output = Self;

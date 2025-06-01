@@ -1,6 +1,6 @@
 use std::rc::Rc;
 use crate::{
-    Unit, Value, clone_vec,
+    Name, Unit, Value, clone_vec,
     dice::{Die, Face}, 
     units::BasicUnit,
     storage::{DieStorage, SetId} };
@@ -22,8 +22,12 @@ pub fn build() -> (Rc<dyn Unit>, Rc<Die>) {
     (unit, die) }
 
 
+fn name(name: &str) -> Name {
+    name.try_into().unwrap() }
+
+
 fn unit() -> Rc<dyn Unit> {
-    BasicUnit::new("Successes", "{} Successes", false) }
+    BasicUnit::new(name("Successes"), "{} Successes", false) }
 
 
 fn faces(unit: &Rc<dyn Unit>) -> Vec<Rc<Face>> {

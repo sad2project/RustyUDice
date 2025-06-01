@@ -43,10 +43,10 @@ pub struct BasicUnit {
     ignore_zero: bool,
 }
 impl BasicUnit {
-    pub fn new(name: &str, output_format: &str, ignore_zero: bool) -> Rc<Self> { 
+    pub fn new(name: Name, output_format: &str, ignore_zero: bool) -> Rc<Self> { 
         Rc::new(Self { 
             id: new_id(), 
-            name: name.try_into().unwrap(),  // TODO: Remove the unwrap(). Pass up the Result or ask for Name
+            name, 
             output_format: output_format.into(), 
             ignore_zero}) }
     
