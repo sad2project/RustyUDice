@@ -6,11 +6,11 @@ use crate::{
     rollers::CollectedStats };
 use crate::rollers::UnitStats;
 
-pub struct CollectedStatsBuilder {
+pub(super) struct CollectedStatsBuilder {
     stats: Vec<UnitStatsCalculator>
 }
 impl CollectedStatsBuilder {
-    pub(crate) fn new(roll_vals: Vec<Values>) -> Self { 
+    pub fn new(roll_vals: Vec<Values>) -> Self { 
         let size = roll_vals.len();
         let mut out = Self { stats: Vec::new() };
         for values in roll_vals {
@@ -40,7 +40,7 @@ impl CollectedStatsBuilder {
             rvalues.finish(); }
     }
 
-    pub(crate) fn build(self) -> CollectedStats {
+    pub fn build(self) -> CollectedStats {
         CollectedStats { 
             stats: self.stats.into_iter()
                 .map(|rvalues| rvalues.calc_all())
@@ -48,7 +48,7 @@ impl CollectedStatsBuilder {
 }
 
 
-pub struct UnitStatsCalculator {
+pub(super) struct UnitStatsCalculator {
     unit: Rc<dyn Unit>,
     values: Vec<i32>
 }

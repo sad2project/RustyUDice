@@ -38,24 +38,52 @@ pub struct MathRoller {
     inner: Vec<RollerMathType>
 }
 impl MathRoller {
+    /// Creates a new `MathRoller`, adding the results of the 2 given rollers together
     pub fn add(lhs: Rc<dyn SubRoller>, rhs: Rc<dyn SubRoller>) -> Rc<Self> {
         Rc::new(Self{ inner: vec![RollerMathType::First(lhs), RollerMathType::Add(rhs)] }) }
     
+    /// Creates a new `MathRoller`, subtracting the results of the 2nd given roller from the first
     pub fn subtract(lhs: Rc<dyn SubRoller>, rhs: Rc<dyn SubRoller>) -> Rc<Self> {
         Rc::new(Self{ inner: vec![RollerMathType::First(lhs), RollerMathType::Subtract(rhs)] }) }
     
+    /// Adds the given roller's results to the results of the rest of this roller
     pub fn plus(mut self, roller: Rc<dyn SubRoller>) -> Self {
         self.inner.push(RollerMathType::Add(roller));
         self }
     
+    /// Adds the given modifier to this roller's results
+    pub fn plus_modifier(mut self, modifier: Values) -> Self {
+        self.inner.push(RollerMathType::Add(modifier.as_roller()));
+        self }
+    
+    /// Adds the given modifier to this roller's results, using the given name as a display value
+    /// for the description and intermediate results
+    pub fn plus_named_modifier(mut self, modifier_name: Name, modifier: Values) -> Self {
+        self.inner.push(RollerMathType::Add(modifier.as_roller_with_name(modifier_name)));
+        self }
+    
+    /// Adds all of the given rollers to the results of the rest of this roller
     pub fn plus_all(mut self, rollers: impl IntoIterator<Item=Rc<dyn SubRoller>>) -> Self {
         self.inner.extend(rollers.into_iter().map(RollerMathType::Add));
         self }
     
+    /// Subtracts the given roller's result to the results of the rest of this roller
     pub fn minus(mut self, roller: Rc<dyn SubRoller>) -> Self {
         self.inner.push(RollerMathType::Subtract(roller));
         self }
     
+    /// Subtracts the given modifier from this roller's results
+    pub fn minus_modifier(mut self, modifier: Values) -> Self {
+        self.inner.push(RollerMathType::Add(modifier.as_roller()));
+        self }
+    
+    /// Subtracts the given modifier from this roller's results, using the given name as a display
+    /// value for the description and intermediate results
+    pub fn minus_named_modifier(mut self, modifier_name: Name, modifier: Values) -> Self {
+        self.inner.push(RollerMathType::Add(modifier.as_roller_with_name(modifier_name)));
+        self }
+    
+    /// Subtracts all of the given rollers from the results of the rest of this roller
     pub fn minus_all(mut self, rollers: impl IntoIterator<Item=Rc<dyn SubRoller>>) -> Self {
         self.inner.extend(rollers.into_iter().map(RollerMathType::Subtract));
         self }
@@ -99,7 +127,8 @@ impl RollMathType {
     
     fn totals(&self) -> Values {
         match self {
-            RollMathType:: First(roll) | RollMathType::Add(roll) => roll.totals(),
+            RollMathType:: First(roll) 
+            | RollMathType::Add(roll) => roll.totals(),
             RollMathType::Subtract(roll) => -roll.totals() } }
 }
 

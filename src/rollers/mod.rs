@@ -157,11 +157,17 @@ pub trait SubRoller: Roller where Self: 'static {
     fn minus(self: Rc<Self>, other: Rc<dyn SubRoller>) -> Rc<MathRoller> where Self: Sized {
         MathRoller::subtract(self, other) }
 
-    fn plus_modifier(self: Rc<Self>, value: Value) -> Rc<ModifierRoller> where Self: Sized {
-        ModifierRoller::new(self, value) }
+    fn plus_modifier(self: Rc<Self>, value: Values) -> Rc<MathRoller> where Self: Sized {
+        MathRoller::add(self, value.as_roller()) }
 
-    fn minus_modifier(self: Rc<Self>, value: Value) -> Rc<ModifierRoller> where Self: Sized {
-        ModifierRoller::new(self, -value) }
+    fn minus_modifier(self: Rc<Self>, value: Values) -> Rc<MathRoller> where Self: Sized {
+        MathRoller::subtract(self, value.as_roller()) }
+    
+    fn plus_named_modifier(self: Rc<Self>, name: Name, values: Values) -> Rc<MathRoller> where Self: Sized {
+        MathRoller::add(self, values.as_roller_with_name(name)) }
+        
+    fn minus_named_modifier(self: Rc<Self>, name: Name, values: Values) -> Rc<MathRoller> where Self: Sized {
+        MathRoller::subtract(self, values.as_roller_with_name(name)) }
 
     fn get_stats(self: Rc<Self>, num_runs: u32) -> Rc<StatsRoller> where Self: Sized {
         StatsRoller::new(self, num_runs) }

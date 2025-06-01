@@ -11,7 +11,7 @@ use crate::{
 /// a `usize` and just uses the string of the number, but `for_index()` takes an index and adds one
 /// to turn it from 0-based to 1-based.
 ///
-/// Note that, unlike most rollers, the constructors of `NamedRoller` don't automatically wrap
+/// Note that, unlike on most rollers, the constructors of `NamedRoller` don't automatically wrap
 /// themselves in `Rc`. The `rc()` method allows for a nice, simple way to do so quickly.
 #[derive(Clone)]
 pub struct NamedRoller {
