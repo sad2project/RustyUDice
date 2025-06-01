@@ -68,5 +68,5 @@ impl Unit for BasicUnit {
 }
 impl Display for BasicUnit {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        f.write_str(self.name) }
+        f.write_str(&self.name) }
 }

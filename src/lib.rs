@@ -40,6 +40,7 @@ use std::{
     fmt::{Display, Debug, Formatter},
     ops::{Deref, Neg},
     rc::Rc };
+use crate::rollers::{SubRoller, ValueRoller};
 
 pub mod dice;
 pub mod premade;
@@ -56,10 +57,11 @@ macro_rules! clone_vec {
         vec![$($items.clone()),+] }; }
 
 
-const MAX_NAME_LEN = 35;
+const MAX_NAME_LEN: usize = 35;
 
 
 /// Error possibilities for illegal names
+#[derive(Debug)]
 pub enum NameError {
     /// If the name is literally empty or is all whitespace, that's an Empty error
     Empty,
@@ -70,40 +72,49 @@ pub enum NameError {
 
 /// `Name` is a `String` wrapper for making valid names of things. It makes sure the string isn't
 /// empty and isn't too short. 
-#[derive(Display)]
-pub Name {
+#[derive(Clone, Debug)]
+pub struct Name {
     val: String
 }
 impl Name {
     /// Take something that can make a String, validate it and either create a new Name or return a
     /// NameError.
     pub fn new(val: impl Display) -> Result<Name, NameError> {
-        Name { val: Name::validate( val.to_string() )? } }
+        Ok(Name { val: Name::validate( val.to_string() )? }) }
     
     /// Takes a number and turns it into a String
     pub fn from_num(num: usize) -> Self {
         Name { val: num.to_string() } }
     
-    fn validate(val: String) -> Result<Name, NameError> {
-        if val.trim.is_empty() {
+    fn validate(val: String) -> Result<String, NameError> {
+        if val.trim().is_empty() {
             Err(NameError::Empty) }
-        else if val.len > MAX_NAME_LEN {
+        else if val.len() > MAX_NAME_LEN {
             Err(NameError::TooLong) }
-        else { val } }
+        else { Ok(val) } }
 }
 impl TryFrom<String> for Name {
     type Error = NameError;
     fn try_from(value: String) -> Result<Name, NameError> {
         Name::new(value) }
 }
-impl From<u64> for Name {
-    fn from(value: u64) -> Name {
+impl TryFrom<&str> for Name {
+    type Error = NameError;
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        Name::new(value.to_string()) }
+}
+impl From<usize> for Name {
+    fn from(value: usize) -> Name {
         Name::from_num(value) }
 }
 impl Deref for Name {
     type Target = str;
     fn deref(&self) -> &str {
-        self.val }
+        &self.val }
+}
+impl Display for Name {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.val) }
 }
 
 
@@ -151,17 +162,16 @@ impl Value {
     pub fn output(&self) -> String { self.unit.output_for(self.value) }
     
     /// Creates an unnamed `ValueRoller` from this
-    pub fn as_roller(self) -> Rc<dyn SubRoller> {
-        self.into::<Values>.as_roller() }
+    pub fn to_roller(self) -> Rc<dyn SubRoller> {
+        Values::from(self).to_roller() }
     
     /// Creates a named `ValueRoller` from this
-    pub fn as_roller_with_name(self, name: Name) -> Rc<dyn SubRoller> {
-        self.into::<Values>.as_roller_with_name(name) }
+    pub fn to_roller_with_name(self, name: Name) -> Rc<dyn SubRoller> {
+        Values::from(self).to_roller_with_name(name) }
 }
 impl Display for Value {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_fmt(format_args!("{}: {}", self.unit, self.value))
-    }
+        f.write_fmt(format_args!("{}: {}", self.unit, self.value)) }
 }
 impl PartialEq for Value {
     fn eq(&self, other: &Self) -> bool {
@@ -248,11 +258,11 @@ impl Values {
         None }
     
     /// Creates an unnamed ValueRoller from the `Values`
-    pub fn as_roller(self) -> Rc<dyn SubRoller> {
+    pub fn to_roller(self) -> Rc<dyn SubRoller> {
         ValueRoller::unnamed(self) }
     
     /// Creates a named `ValueRoller` from the `Values`
-    pub fn as_roller_with_name(self, name: Name) -> Rc<dyn SubRoller> {
+    pub fn to_roller_with_name(self, name: Name) -> Rc<dyn SubRoller> {
         ValueRoller::named(name, self) }
 }
 impl Neg for Values {

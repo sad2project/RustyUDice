@@ -26,23 +26,24 @@
 mod die;
 mod math;
 mod multi;
-mod modifier;
 mod pool;
 mod stats;
+mod value;
 
 pub use self::{
     die::*,
     math::*,
     multi::*,
-    modifier::*,
     pool::*,
-    stats::* };
+    stats::*,
+    value::* };
 
 use std::{
+    num::NonZero,
     rc::Rc,
     vec::Vec };
 use crate::{
-    Value, Values,
+    Name, Values,
     random::{default_rng, Rng} };
 
 
@@ -158,18 +159,18 @@ pub trait SubRoller: Roller where Self: 'static {
         MathRoller::subtract(self, other) }
 
     fn plus_modifier(self: Rc<Self>, value: Values) -> Rc<MathRoller> where Self: Sized {
-        MathRoller::add(self, value.as_roller()) }
+        MathRoller::add(self, value.to_roller()) }
 
     fn minus_modifier(self: Rc<Self>, value: Values) -> Rc<MathRoller> where Self: Sized {
-        MathRoller::subtract(self, value.as_roller()) }
+        MathRoller::subtract(self, value.to_roller()) }
     
     fn plus_named_modifier(self: Rc<Self>, name: Name, values: Values) -> Rc<MathRoller> where Self: Sized {
-        MathRoller::add(self, values.as_roller_with_name(name)) }
+        MathRoller::add(self, values.to_roller_with_name(name)) }
         
     fn minus_named_modifier(self: Rc<Self>, name: Name, values: Values) -> Rc<MathRoller> where Self: Sized {
-        MathRoller::subtract(self, values.as_roller_with_name(name)) }
+        MathRoller::subtract(self, values.to_roller_with_name(name)) }
 
-    fn get_stats(self: Rc<Self>, num_runs: u32) -> Rc<StatsRoller> where Self: Sized {
+    fn get_stats(self: Rc<Self>, num_runs: NonZero<u32>) -> Rc<StatsRoller> where Self: Sized {
         StatsRoller::new(self, num_runs) }
 }
 

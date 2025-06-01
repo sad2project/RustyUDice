@@ -3,11 +3,12 @@ use self::calculate::*;
 
 use std::{
     fmt::{Display, Error, Formatter},
+    num::NonZero,
     ops::Deref,
     rc::Rc };
 use crate::{
     {Unit, Values},
-    random::Rng,
+    random::{Rng, default_rng},
     rollers::{Roller, Roll, SubRoll, SubRoller} };
 
 /// `StatsRoller` is used to find out the statistics of a
@@ -35,16 +36,16 @@ impl StatsRoller {
     /// Creates a new `StatsRoller` using the given roller and a number of times to run it in order
     /// to generate the statistics
     pub fn new(roller: Rc<dyn SubRoller>, num_runs: NonZero<u32>) -> Rc<Self> {
-        Rc::new(Self { runs: num_runs, roller }) }
+        Rc::new(Self { runs: num_runs.get(), roller }) }
   
     /// Does the same thing as `roll()`, except it returns the roller as a statically-typed
     /// `StatisticsRoll` instead of a `dyn Roll`, giving access to its extra methods
-    pub fn static_roll(self: Rc<Self>) -> Rc<StatisticsRoll> { 
-        self.static_roll_with(default_rng()) }
+    pub fn statistics_roll(self: Rc<Self>) -> Box<StatisticsRoll> { 
+        self.statistics_roll_with(default_rng()) }
     
     /// Does the same thing as `roll_with()`, except it returns the roller as a statically-typed
     /// `StatisticsRoll` instead of a `dyn Roll`, giving access to its extra methods
-    pub fn static_roll_with(self: Rc<Self>, rng: Rng) -> Rc<StatisticsRoll> {
+    pub fn statistics_roll_with(self: Rc<Self>, rng: Rng) -> Box<StatisticsRoll> {
         StatisticsRoll::new(
             (0..self.runs)
             .map(|_| self.roller.clone().inner_roll_with(rng.clone()))
@@ -55,7 +56,7 @@ impl Roller for StatsRoller {
         format!("Runs '{}' {} times", self.roller.description(), self.runs) }
     
     fn roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn Roll> {
-        self.static_roll_with(rng) }
+        self.statistics_roll_with(rng) }
 }
 
 
@@ -189,11 +190,8 @@ impl Stat {
     pub fn for_unit(&self, unit: Rc<dyn Unit>) -> Option<f32> {
         self.values.iter()
             .filter(|stat_val| stat_val.has_same_unit(unit.clone()))
-            .first() }
-        // for stat_val in self.values.iter() {
-        //     if stat_val.has_same_unit(unit.clone()) {
-        //         return Some(stat_val.value) } }
-        // None }
+            .map(|stat_val| stat_val.value)
+            .next() }
     
     /// Iterator to cycle through the stats by `Unit`
     pub fn iter(&self) -> impl Iterator<Item=&StatValue> { self.values.iter() }

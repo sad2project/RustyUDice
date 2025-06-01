@@ -3,7 +3,7 @@ use std::{
 };
 
 use crate::{
-    Values,
+    Name, Values,
     random::Rng, 
     rollers::{Roller, Roll, SubRoller, SubRoll, DieRoll} };
 
@@ -53,13 +53,13 @@ impl MathRoller {
     
     /// Adds the given modifier to this roller's results
     pub fn plus_modifier(mut self, modifier: Values) -> Self {
-        self.inner.push(RollerMathType::Add(modifier.as_roller()));
+        self.inner.push(RollerMathType::Add(modifier.to_roller()));
         self }
     
     /// Adds the given modifier to this roller's results, using the given name as a display value
     /// for the description and intermediate results
     pub fn plus_named_modifier(mut self, modifier_name: Name, modifier: Values) -> Self {
-        self.inner.push(RollerMathType::Add(modifier.as_roller_with_name(modifier_name)));
+        self.inner.push(RollerMathType::Add(modifier.to_roller_with_name(modifier_name)));
         self }
     
     /// Adds all of the given rollers to the results of the rest of this roller
@@ -74,13 +74,13 @@ impl MathRoller {
     
     /// Subtracts the given modifier from this roller's results
     pub fn minus_modifier(mut self, modifier: Values) -> Self {
-        self.inner.push(RollerMathType::Add(modifier.as_roller()));
+        self.inner.push(RollerMathType::Add(modifier.to_roller()));
         self }
     
     /// Subtracts the given modifier from this roller's results, using the given name as a display
     /// value for the description and intermediate results
     pub fn minus_named_modifier(mut self, modifier_name: Name, modifier: Values) -> Self {
-        self.inner.push(RollerMathType::Add(modifier.as_roller_with_name(modifier_name)));
+        self.inner.push(RollerMathType::Add(modifier.to_roller_with_name(modifier_name)));
         self }
     
     /// Subtracts all of the given rollers from the results of the rest of this roller

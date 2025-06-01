@@ -30,12 +30,15 @@ impl NamedRoller {
     
     pub fn rc(self) -> Rc<Self> {
         Rc::new(self) }
+    
+    fn roll_with(&self, rng: Rng) -> NamedRoll {
+        NamedRoll { name: self.name.clone(), roll: self.roller.clone().roll_with(rng) } }
 }
 impl Roller for NamedRoller {
     fn description(&self) -> String {
         format!("{}: {}", self.name, self.roller.description()) }
     
-    fn roll_with(&self, rng: Rng) -> Box<dyn Roll> {
+    fn roll_with(self: Rc<Self>, rng: Rng) -> Box<dyn Roll> {
         Box::new(NamedRoll { name: self.name.clone(), roll: self.roller.clone().roll_with(rng) }) }
 }
 
@@ -61,7 +64,7 @@ impl MultiRoller {
     
     pub fn new_numbered(rollers: impl IntoIterator<Item=Rc<dyn Roller>>) -> Rc<Self> {
         Self::new(
-            rollers.iter()
+            rollers.into_iter()
                 .enumerate()
                 .map(|(idx, roller)| NamedRoller::for_index(idx, roller))
                 .collect()) }
@@ -97,7 +100,7 @@ struct NamedRoll {
     name: Name,
     roll: Box<dyn Roll>
 }
-impl NamedRoll {
+impl Roll for NamedRoll {
     fn intermediate_results(&self) -> String {
         format!("{}: {}", self.name, self.roll.intermediate_results()) }
 
