@@ -59,7 +59,7 @@ macro_rules! clone_vec {
 
 const MAX_NAME_LEN: usize = 35;
 
-
+//TODO: derive from Error
 /// Error possibilities for illegal names
 #[derive(Debug)]
 pub enum NameError {
