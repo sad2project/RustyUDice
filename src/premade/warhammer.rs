@@ -37,11 +37,11 @@ fn units() -> (RUnit, RUnit, RUnit, RUnit, RUnit, RUnit, RUnit) {
 
 
 fn common_faces(success_unit: &RUnit, boon_unit: &RUnit) -> (RFace, RFace, RFace, RFace, RFace, RFace) {
-    ( Face::with_one_val("Challenge", Value::new(success_unit, -1)),
-    Face::with_one_val("Success", Value::new(success_unit, 1)),
-    Face::with_two_vals("Success + Boon", Value::new(success_unit, 1), Value::new(boon_unit, 1)),
-    Face::with_one_val("Bane", Value::new(boon_unit, -1)),
-    Face::with_one_val("Boon", Value::new(boon_unit, 1)),
+    ( Face::with_one_val(name("Challenge"), Value::new(success_unit, -1)),
+    Face::with_one_val(name("Success"), Value::new(success_unit, 1)),
+    Face::with_two_vals(name("Success + Boon"), Value::new(success_unit, 1), Value::new(boon_unit, 1)),
+    Face::with_one_val(name("Bane"), Value::new(boon_unit, -1)),
+    Face::with_one_val(name("Boon"), Value::new(boon_unit, 1)),
     Face::blank(success_unit)) }
 
 
@@ -50,26 +50,26 @@ fn characteristic_die(success: &RFace, boon: &RFace, blank: &RFace) -> RDie {
 
 
 fn challenge_die(challenge: &RFace, bane: &RFace, blank: &RFace, succ_unit: &RUnit, boon_unit: &RUnit, star_unit: &RUnit) -> RDie {
-    let challenge_x2 = Face::with_one_val("Challenge x2", Value::new(&succ_unit, -2));
+    let challenge_x2 = Face::with_one_val(name("Challenge x2"), Value::new(&succ_unit, -2));
     Die::new("Challenge", clone_vec![
         challenge,
         challenge,
         challenge_x2,
         challenge_x2,
         bane,
-        Face::with_one_val("Bane x2", Value::new(&boon_unit, -2)),
-        Face::with_one_val("Chaos Star", Value::new(&star_unit, 1)),
+        Face::with_one_val(name("Bane x2"), Value::new(&boon_unit, -2)),
+        Face::with_one_val(name("Chaos Star"), Value::new(&star_unit, 1)),
         blank]) }
 
 
 fn expertise_die(success: &RFace, boon: &RFace, blank: &RFace, succ_unit: &RUnit, reroll_unit: &RUnit, comet_unit: &RUnit) -> RDie {
-    let righteous = Face::with_two_vals("Righteous Success", Value::new(succ_unit, 1), Value::new(reroll_unit, 1));
+    let righteous = Face::with_two_vals(name("Righteous Success"), Value::new(succ_unit, 1), Value::new(reroll_unit, 1));
     Die::new("Expertise", clone_vec![
         success,
         righteous,
         boon,
         boon,
-        Face::with_one_val("Sigmar's Comet", Value::new(&comet_unit, 1)),
+        Face::with_one_val(name("Sigmar's Comet"), Value::new(&comet_unit, 1)),
         blank]) }
 
 
@@ -94,7 +94,7 @@ fn misfortune_die(challenge: &RFace, bane: &RFace, blank: &RFace) -> RDie {
 
 
 fn conservative_die(success: &RFace, boon: &RFace, succ_boon: &RFace, blank: &RFace, succ_unit: &RUnit, delay_unit: &RUnit) -> RDie {
-    let succ_delay = Face::with_two_vals("Success + Delay", Value::new(&succ_unit, 1), Value::new(&delay_unit, 1));
+    let succ_delay = Face::with_two_vals(name("Success + Delay"), Value::new(&succ_unit, 1), Value::new(&delay_unit, 1));
     Die::new("Conservative", clone_vec![
         success,
         success,
@@ -108,12 +108,12 @@ fn conservative_die(success: &RFace, boon: &RFace, succ_boon: &RFace, blank: &RF
         blank]) }
 
 fn reckless_die(succ_boon: &RFace, bane: &RFace, blank: &RFace, succ_unit: &RUnit, boon_unit: &RUnit, exert_unit: &RUnit) -> RDie {
-    let success_x2 = Face::with_one_val("Success x2", Value::new(&succ_unit, 2));
-    let succ_exert = Face::with_two_vals("Success + Exertion", Value::new(&succ_unit, 1), Value::new(&exert_unit, 1));
+    let success_x2 = Face::with_one_val(name("Success x2"), Value::new(&succ_unit, 2));
+    let succ_exert = Face::with_two_vals(name("Success + Exertion"), Value::new(&succ_unit, 1), Value::new(&exert_unit, 1));
     Die::new("Reckless", clone_vec![
         success_x2,
         success_x2,
-        &Face::with_one_val("Boon x2", Value::new(&boon_unit, 2)),
+        &Face::with_one_val(name("Boon x2"), Value::new(&boon_unit, 2)),
         succ_boon,
         bane,
         bane,

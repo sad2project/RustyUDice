@@ -16,8 +16,8 @@ fn unit() -> Rc<dyn Unit> { BasicUnit::new(name("Shifts"), "{} Shifts", false) }
 
 
 fn faces(unit: &Rc<dyn Unit>) -> Vec<Rc<Face>> {
-    let face_plus = Face::with_one_val("+", Value::new(unit, 1));
-    let face_minus = Face::with_one_val("-", Value::new(unit, -1));
+    let face_plus = Face::with_one_val(name("+"), Value::new(unit, 1));
+    let face_minus = Face::with_one_val(name("-"), Value::new(unit, -1));
     let face_blank = Face::blank(unit);
     clone_vec![
         face_plus,

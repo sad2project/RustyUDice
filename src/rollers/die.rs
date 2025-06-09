@@ -140,21 +140,20 @@ impl SubRoll for ExplodedRoll {
 
 #[cfg(test)]
 mod tests {
-    use std::{
-        rc::Rc };
+    use std::rc::Rc;
     use crate::{
-        Value, Values,
-        dice::{Die, Face},
-        random::Rng,
-        units::DNumUnit,
-        rollers::{Roller, Roll} };
-    use crate::random::default_rng;
-    use crate::rollers::SubRoller;
+        Name,Value, Values, 
+        dice::{Die, Face}, 
+        random::{default_rng, Rng}, 
+        units::DNumUnit, 
+        rollers::{Roller, Roll, SubRoller}};
 
+    fn name(name: &str) -> Name { Name::new(name).unwrap() }
+    
     fn d2_test_die() -> Rc<Die> {
         let rel = DNumUnit::new();
-        let face1 = Face::new("1", vec![Value{ unit: rel.clone(), value: 1}]);
-        let face2 = Face::new("2", vec![Value{ unit: rel.clone(), value: 2}]);
+        let face1 = Face::new(name("1"), vec![Value{ unit: rel.clone(), value: 1}]);
+        let face2 = Face::new(name("2"), vec![Value{ unit: rel.clone(), value: 2}]);
         Die::new("d2", vec![face1, face2]) }
 
     fn always_2_rng() -> Rng { Rng::from_seed(2) }

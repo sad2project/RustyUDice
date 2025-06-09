@@ -1,9 +1,7 @@
 use std::{
     fmt::{Display, Error, Formatter},
     rc::Rc };
-use crate::{
-    {Unit, Value, Values},
-    random::{choose_from, Rng, default_rng} };
+use crate::{{Unit, Value, Values}, random::{choose_from, Rng, default_rng}, Name};
 
 
 /// `Die`/Dice are the most obvious inclusion in a dice-rolling program. 
@@ -45,25 +43,28 @@ impl Display for Die {
 }
 
 
+fn name(name: &str) -> Name { Name::new(name).unwrap() }
+
+
 /// A `Face` of a `Die`. Has a label in order to have a short bit of text for
 /// display purposes.
 #[derive(Clone, Debug)]
 pub struct Face {
-    pub label: String,
+    pub label: Name,
     pub values: Values,
 }
 impl Face {
-    pub fn new(label: &str, values: Vec<Value>) -> Rc<Self> {
-        Rc::new(Face{ label: label.into(), values: Values::from(values) }) }
+    pub fn new(label: Name, values: Vec<Value>) -> Rc<Self> {
+        Rc::new(Face{ label, values: Values::from(values) }) }
     
-    pub fn with_one_val(label: &str, value: Value) -> Rc<Self> {
+    pub fn with_one_val(label: Name, value: Value) -> Rc<Self> {
         Self::new(label, vec![value]) }
     
-    pub fn with_two_vals(label: &str, val1: Value, val2: Value) -> Rc<Self> {
+    pub fn with_two_vals(label: Name, val1: Value, val2: Value) -> Rc<Self> {
         Self::new(label, vec![val1, val2]) }
     
     pub fn blank(unit: &Rc<dyn Unit>) -> Rc<Self> {
-        Self::with_one_val(" ", Value::new(unit, 0)) }
+        Self::with_one_val(name("_"), Value::new(unit, 0)) }
     
     pub fn value_for(&self, unit: &Rc<dyn Unit>) -> Option<i32> {
         self.values.value_for(unit) }

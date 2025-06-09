@@ -34,16 +34,16 @@ fn units() -> (RUnit, RUnit, RUnit, RUnit) {
 
 
 fn common_faces(success_unit: &RUnit, adv_unit: &RUnit) -> (RFace, RFace, RFace, RFace, RFace, RFace, RFace, RFace, RFace, RFace, RFace) {
-    ( Face::with_one_val("Success", Value::new(success_unit, 1)),
-    Face::with_one_val("Success x2", Value::new(success_unit, 2)),
-    Face::with_one_val("Failure", Value::new(success_unit, -1)),
-    Face::with_one_val("Failure x2", Value::new(success_unit, -2)),
-    Face::with_one_val("Advantage", Value::new(adv_unit, 1)),
-    Face::with_one_val("Advantage x2", Value::new(adv_unit, 2)),
-    Face::with_one_val("Threat", Value::new(adv_unit, -1)),
-    Face::with_one_val("Threat x2", Value::new(adv_unit, -2)),
-    Face::with_two_vals("Success + Advantage", Value::new(success_unit, 1), Value::new(adv_unit, 1)),
-    Face::with_two_vals("Failure + Threat", Value::new(success_unit, -1), Value::new(adv_unit, -1)),
+    ( Face::with_one_val(name("Success"), Value::new(success_unit, 1)),
+    Face::with_one_val(name("Success x2"), Value::new(success_unit, 2)),
+    Face::with_one_val(name("Failure"), Value::new(success_unit, -1)),
+    Face::with_one_val(name("Failure x2"), Value::new(success_unit, -2)),
+    Face::with_one_val(name("Advantage"), Value::new(adv_unit, 1)),
+    Face::with_one_val(name("Advantage x2"), Value::new(adv_unit, 2)),
+    Face::with_one_val(name("Threat"), Value::new(adv_unit, -1)),
+    Face::with_one_val(name("Threat x2"), Value::new(adv_unit, -2)),
+    Face::with_two_vals(name("Success + Advantage"), Value::new(success_unit, 1), Value::new(adv_unit, 1)),
+    Face::with_two_vals(name("Failure + Threat"), Value::new(success_unit, -1), Value::new(adv_unit, -1)),
     Face::blank(success_unit)) }
 
 
@@ -71,7 +71,7 @@ fn proficiency_die(succ_face: &RFace, succx2_face: &RFace, adv_face: &RFace, adv
         succ_adv_face,
         succ_adv_face,
         succ_adv_face,
-        Face::with_one_val("Triumph", Value::new(triumph_unit, 1)),
+        Face::with_one_val(name("Triumph"), Value::new(triumph_unit, 1)),
         blank_face ]) }
 
 
@@ -122,10 +122,10 @@ fn setback_die(fail_face: &RFace, threat_face: &RFace, blank_face: &RFace) -> RD
 
 
 fn force_die(force_unit: &RUnit) -> RDie {
-    let light = Face::with_one_val("Light", Value::new(force_unit, 1));
-    let lightx2 = Face::with_one_val("Light x2", Value::new(force_unit, 2));
-    let dark = Face::with_one_val("Dark", Value::new(force_unit, -1));
-    let darkx2 = Face::with_one_val("Dark x2", Value::new(force_unit, -2));
+    let light = Face::with_one_val(name("Light"), Value::new(force_unit, 1));
+    let lightx2 = Face::with_one_val(name("Light x2"), Value::new(force_unit, 2));
+    let dark = Face::with_one_val(name("Dark"), Value::new(force_unit, -1));
+    let darkx2 = Face::with_one_val(name("Dark x2"), Value::new(force_unit, -2));
     Die::new("Force", clone_vec![
         light,
         light,
