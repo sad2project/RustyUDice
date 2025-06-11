@@ -1,7 +1,9 @@
 use std::{
     fmt::{Display, Error, Formatter},
     rc::Rc };
-use crate::{{Unit, Value, Values}, random::{choose_from, Rng, default_rng}, Name};
+use crate::{
+    {Name, Unit, Value, Values}, 
+    random::{choose_from, Rng, default_rng}};
 
 
 /// `Die`/Dice are the most obvious inclusion in a dice-rolling program. 
@@ -9,14 +11,14 @@ use crate::{{Unit, Value, Values}, random::{choose_from, Rng, default_rng}, Name
 /// The more complicated part is the collection of values in `Face`s. 
 #[derive(Clone, Debug)]
 pub struct Die {
-    pub name: String,
+    pub name: Name,
     pub faces: Vec<Rc<Face>>,
     pub explode_on: Option<Rc<dyn Unit>>
 }
 impl  Die {
-    pub fn new(name: &str, faces: Vec<Rc<Face>>) -> Rc<Self> {
+    pub fn new(name: Name, faces: Vec<Rc<Face>>) -> Rc<Self> {
         Rc::new(Self { 
-            name: name.into(), 
+            name, 
             faces, 
             explode_on: None}) }
     

@@ -37,6 +37,7 @@
 /// we'll see.
 
 use std::{
+    error::Error
     fmt::{Display, Debug, Formatter},
     ops::{Deref, Neg},
     rc::Rc };
@@ -67,6 +68,23 @@ pub enum NameError {
     Empty,
     /// If the name is longer than 35 characters, it's too long
     TooLong
+}
+impl Display for NameError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            NameError::Empty => 
+                f.write_str("name was empty or just whitespace"),
+            NameError::TooLong => 
+                f.write_fmt(format_args!("name was longer than the max length of {}", MAX_NAME_LEN)) } }
+}
+impl Debug for NameError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            NameError::Empty => f.write_str("NameError::Empty"),
+            NameError::TooLong => f.write_str("NameError::TooLong") } }
+}
+impl Error for NameError {
+    
 }
 
 
